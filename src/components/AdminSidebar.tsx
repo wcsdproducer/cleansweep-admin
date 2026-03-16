@@ -22,6 +22,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -33,6 +36,9 @@ const navigationItems = [
   { name: "Data Explorer", icon: Database, href: "/database" },
   { name: "AI Summary", icon: Sparkles, href: "/ai-summary" },
   { name: "Monitoring", icon: Activity, href: "/monitoring" },
+]
+
+const settingsItems = [
   { name: "Style Guide", icon: Palette, href: "/style-guide" },
 ]
 
@@ -58,33 +64,55 @@ export function AdminSidebar() {
       </SidebarHeader>
       <SidebarSeparator className="opacity-10" />
       <SidebarContent className="p-3">
-        <SidebarMenu>
-          {navigationItems.map((item) => (
-            <SidebarMenuItem key={item.name} className="mb-1">
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href}
-                tooltip={item.name}
-                className="transition-all duration-200 hover:scale-[1.02] data-[active=true]:bg-accent data-[active=true]:text-white"
-              >
-                <Link href={item.href} className="flex items-center gap-3">
-                  <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-accent'}`} />
-                  <span className="font-medium">{item.name}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-white/40 px-2 py-4">Main Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navigationItems.map((item) => (
+                <SidebarMenuItem key={item.name} className="mb-1">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.name}
+                    className="transition-all duration-200 hover:scale-[1.02] data-[active=true]:bg-accent data-[active=true]:text-white text-white/80"
+                  >
+                    <Link href={item.href} className="flex items-center gap-3">
+                      <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-accent'}`} />
+                      <span className="font-medium">{item.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="text-white/40 px-2 py-4">Settings</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {settingsItems.map((item) => (
+                <SidebarMenuItem key={item.name} className="mb-1">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.name}
+                    className="transition-all duration-200 hover:scale-[1.02] data-[active=true]:bg-accent data-[active=true]:text-white text-white/80"
+                  >
+                    <Link href={item.href} className="flex items-center gap-3">
+                      <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-accent'}`} />
+                      <span className="font-medium">{item.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarSeparator className="opacity-10" />
       <SidebarFooter className="p-3">
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Settings" className="opacity-80 hover:opacity-100 hover:bg-sidebar-accent">
-              <Settings className="w-5 h-5 text-accent" />
-              <span className="font-medium">Settings</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Sign Out" className="text-destructive hover:text-white hover:bg-destructive transition-colors">
               <LogOut className="w-5 h-5" />
