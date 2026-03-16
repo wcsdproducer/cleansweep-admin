@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -14,13 +15,12 @@ import { Button } from "@/components/ui/button"
 import { Database, Filter, Download, RefreshCw, Pencil, Trash } from "lucide-react"
 import { Input } from "@/components/ui/input"
 
-const TABLES = ["projects", "users", "sessions", "logs", "billing"]
+const TABLES = ["customers", "users", "sessions", "logs", "billing"]
 
 const MOCK_DATA: Record<string, any[]> = {
-  projects: [
-    { id: 1, title: "Vault Alpha", slug: "vault-alpha", created_at: "2024-01-01" },
-    { id: 2, title: "Nexus Beta", slug: "nexus-beta", created_at: "2024-01-15" },
-    { id: 3, title: "Core Omega", slug: "core-omega", created_at: "2024-02-10" },
+  customers: [
+    { id: "bk0266qyVpU0smIdyRwaSEzA6Wn1", firstName: "John", lastName: "Freeman", email: "workonnotin@gmail.com", loyaltyCredits: 0 },
+    { id: "bk0266qyVpU0smIdyRwaSEzA6Wn2", firstName: "Jane", lastName: "Smith", email: "jane.smith@example.com", loyaltyCredits: 150 },
   ],
   users: [
     { id: 101, username: "admin_vault", email: "admin@vault.com", last_login: "2024-03-15" },
@@ -29,7 +29,7 @@ const MOCK_DATA: Record<string, any[]> = {
 }
 
 export default function DatabasePage() {
-  const [selectedTable, setSelectedTable] = React.useState("projects")
+  const [selectedTable, setSelectedTable] = React.useState("customers")
   const currentData = MOCK_DATA[selectedTable] || []
 
   return (

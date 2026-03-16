@@ -1,16 +1,17 @@
+
 "use client"
 
 import * as React from "react"
 import {
   LayoutDashboard,
-  FolderKanban,
   Users,
   Database,
   Sparkles,
   Activity,
   Settings,
   LogOut,
-  CheckCircle2
+  CheckCircle2,
+  UserCircle
 } from "lucide-react"
 import {
   Sidebar,
@@ -27,7 +28,7 @@ import { usePathname } from "next/navigation"
 
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { name: "Projects", icon: FolderKanban, href: "/projects" },
+  { name: "Customers", icon: UserCircle, href: "/customers" },
   { name: "Users", icon: Users, href: "/users" },
   { name: "Data Explorer", icon: Database, href: "/database" },
   { name: "AI Summary", icon: Sparkles, href: "/ai-summary" },
