@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "A workspace project record",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the project" },
+        "owner": { "type": "string", "description": "The owner's display name or ID" },
+        "status": { "type": "string", "enum": ["Active", "Archived", "Pending"] },
+        "updated": { "type": "string", "format": "date", "description": "Last updated timestamp" }
+      },
+      "required": ["name", "status"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User account details and permissions",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["Super Admin", "Developer", "Manager", "Viewer", "Security"] },
+        "status": { "type": "string", "enum": ["Online", "Offline", "Away"] },
+        "avatar": { "type": "string", "description": "Seed for avatar generation" }
+      },
+      "required": ["name", "email", "role"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Collection of workspace projects"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Global user profiles"
+    }
+  }
+}
