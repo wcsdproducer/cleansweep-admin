@@ -6,15 +6,21 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == "QtKTVNyqnjeZNiOaTJB6m0xaAkn2";
     }
     
-    // Allow read access for prototyping; restrict writes to authenticated users
+    // Simplified development rules for customers: Allow anyone to read and any authenticated user to write
     match /customers/{customerId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
     
+    // Simplified development rules for user profiles: Allow anyone to read
     match /users/{userId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null;
+    }
+    
+    // Default fallback: allow read for other collections during development
+    match /{document=**} {
+      allow read: if true;
     }
   }
 }
