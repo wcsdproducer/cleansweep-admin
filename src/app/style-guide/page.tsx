@@ -4,7 +4,6 @@ import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
 import { 
   Palette, 
   Type, 
@@ -13,7 +12,6 @@ import {
   Layers, 
   CheckCircle2, 
   Sparkles, 
-  Home,
   ShieldCheck,
   UserCheck
 } from "lucide-react"
@@ -23,8 +21,8 @@ export default function StyleGuidePage() {
     <div className="max-w-6xl mx-auto space-y-12 pb-20">
       <header>
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-accent/10 rounded-lg">
-            <Palette className="w-8 h-8 text-accent" />
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Palette className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-4xl font-bold font-headline tracking-tight">CleanSweep Style Guide</h1>
         </div>
@@ -39,11 +37,11 @@ export default function StyleGuidePage() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {[
-            { name: "Primary Teal", class: "bg-primary", hex: "#00A896", label: "Brand Identity" },
-            { name: "Accent Mint", class: "bg-accent", hex: "#4AD991", label: "Action Buttons" },
-            { name: "Navy Sidebar", class: "bg-[hsl(174,100%,12%)]", hex: "#001D1A", label: "Navigation" },
-            { name: "Fresh Background", class: "bg-background border", hex: "#F7FEFC", label: "Main Canvas" },
-            { name: "Secondary Mint", class: "bg-secondary", hex: "#E6F7F2", label: "Subtle Areas" },
+            { name: "Brand Blue", class: "bg-primary", hex: "#42A4C2", label: "Primary Brand" },
+            { name: "Accent Mint", class: "bg-accent", hex: "#4AD991", label: "Action Secondary" },
+            { name: "Navy Sidebar", class: "bg-[hsl(194,60%,12%)]", hex: "#0B2631", label: "Navigation" },
+            { name: "Fresh Background", class: "bg-background border", hex: "#F8FBFC", label: "Main Canvas" },
+            { name: "Secondary Tint", class: "bg-secondary", hex: "#F0F7F9", label: "Subtle Areas" },
           ].map((color) => (
             <div key={color.name} className="flex flex-col gap-2 p-4 bg-white rounded-2xl border shadow-sm">
               <div className={`h-24 w-full rounded-xl ${color.class}`} />
@@ -100,11 +98,11 @@ export default function StyleGuidePage() {
               <CardDescription>Primary and decorative actions</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-4">
-              <Button className="bg-accent hover:bg-accent/90 text-white shadow-lg shadow-accent/20">
-                Get Free Estimate
-              </Button>
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
                 Primary Action
+              </Button>
+              <Button className="bg-accent hover:bg-accent/90">
+                Accent Action
               </Button>
               <Button variant="outline">Secondary Action</Button>
               <Button variant="ghost">Ghost Button</Button>
@@ -117,10 +115,10 @@ export default function StyleGuidePage() {
               <CardDescription>Status and category labels</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
-              <Badge className="bg-accent text-white">Active Service</Badge>
-              <Badge variant="secondary">Recurring Clean</Badge>
-              <Badge variant="outline" className="border-primary text-primary">Certified</Badge>
-              <Badge variant="destructive">Urgent Alert</Badge>
+              <Badge className="bg-primary text-white">Main Category</Badge>
+              <Badge variant="secondary">Subtle Note</Badge>
+              <Badge variant="outline" className="border-accent text-accent">Active</Badge>
+              <Badge variant="destructive">Alert</Badge>
             </CardContent>
           </Card>
         </div>
@@ -133,7 +131,7 @@ export default function StyleGuidePage() {
           <h2 className="text-2xl font-bold">Brand Card Styles</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-xl transition-all duration-300 border-accent/20 overflow-hidden group">
+          <Card className="hover:shadow-xl transition-all duration-300 border-primary/20 overflow-hidden group">
             <div className="h-48 bg-secondary relative overflow-hidden">
                <img 
                 src="https://picsum.photos/seed/clean1/600/400" 
@@ -142,12 +140,12 @@ export default function StyleGuidePage() {
                 data-ai-hint="clean house"
               />
               <div className="absolute top-4 left-4">
-                <Badge className="bg-accent text-white border-none">Recurring</Badge>
+                <Badge className="bg-primary text-white border-none">Recurring</Badge>
               </div>
             </div>
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-accent" />
+                <Sparkles className="w-5 h-5 text-primary" />
                 Premium Cleaning
               </CardTitle>
               <CardDescription>The perfect maintenance plan for busy families.</CardDescription>
@@ -180,7 +178,7 @@ export default function StyleGuidePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-accent/30 bg-secondary/30">
+          <Card className="border-2 border-primary/30 bg-secondary/30">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-primary" />
@@ -189,7 +187,7 @@ export default function StyleGuidePage() {
               <CardDescription>Every CleanSweep professional undergoes rigorous screening.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-white rounded-xl shadow-sm border border-accent/10">
+              <div className="p-4 bg-white rounded-xl shadow-sm border border-primary/10">
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Verification Status</p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold">100% Verified</span>
@@ -198,24 +196,6 @@ export default function StyleGuidePage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </section>
-
-      {/* Brand Motto Section */}
-      <section className="bg-white rounded-3xl p-12 text-center border shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-accent to-primary" />
-        <div className="max-w-2xl mx-auto space-y-6">
-          <h2 className="text-4xl font-bold font-headline leading-tight">
-            Your Home, <span className="text-accent">Cleaned Your Way.</span>
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            We don't just clean; we restore your peace of mind. Our 49-point checklist ensures your home meets our highest standards of cleanliness every single time.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button size="lg" className="bg-accent hover:bg-accent/90 h-14 px-8 rounded-full shadow-xl shadow-accent/20">
-              Start Free Custom Plan
-            </Button>
-          </div>
         </div>
       </section>
     </div>
