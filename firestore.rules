@@ -6,13 +6,14 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == "QtKTVNyqnjeZNiOaTJB6m0xaAkn2";
     }
     
-    // Maintain standard access patterns for other users
+    // Allow read access for prototyping; restrict writes to authenticated users
     match /customers/{customerId} {
-      allow read: if request.auth != null;
+      allow read: if true;
+      allow write: if request.auth != null;
     }
     
     match /users/{userId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
