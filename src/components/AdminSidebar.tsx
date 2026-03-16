@@ -10,7 +10,6 @@ import {
   Activity,
   Settings,
   LogOut,
-  ShieldCheck,
   CheckCircle2
 } from "lucide-react"
 import {
@@ -42,20 +41,20 @@ export function AdminSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-xl">
       <SidebarHeader className="h-20 flex items-center px-6">
         <div className="flex items-center gap-3">
-          <div className="bg-accent rounded-full p-2.5 shadow-lg shadow-accent/20">
+          <div className="bg-primary rounded-lg p-2 shadow-lg shadow-primary/20">
             <CheckCircle2 className="w-6 h-6 text-white" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-headline font-bold text-xl leading-none">
+            <span className="font-headline font-bold text-xl leading-none tracking-tight">
               CleanSweep
             </span>
-            <span className="text-[10px] uppercase tracking-widest opacity-70 font-semibold mt-1">
+            <span className="text-[9px] uppercase tracking-[0.2em] opacity-80 font-bold mt-1 text-primary">
               Admin Vault
             </span>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarSeparator className="opacity-20" />
+      <SidebarSeparator className="opacity-10" />
       <SidebarContent className="p-3">
         <SidebarMenu>
           {navigationItems.map((item) => (
@@ -64,10 +63,10 @@ export function AdminSidebar() {
                 asChild
                 isActive={pathname === item.href}
                 tooltip={item.name}
-                className="transition-all duration-200 hover:scale-[1.02]"
+                className="transition-all duration-200 hover:scale-[1.02] data-[active=true]:bg-primary data-[active=true]:text-white"
               >
                 <Link href={item.href} className="flex items-center gap-3">
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-primary'}`} />
                   <span className="font-medium">{item.name}</span>
                 </Link>
               </SidebarMenuButton>
@@ -75,17 +74,17 @@ export function AdminSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarSeparator className="opacity-20" />
+      <SidebarSeparator className="opacity-10" />
       <SidebarFooter className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Settings" className="opacity-80 hover:opacity-100">
-              <Settings className="w-5 h-5" />
+            <SidebarMenuButton tooltip="Settings" className="opacity-80 hover:opacity-100 hover:bg-sidebar-accent">
+              <Settings className="w-5 h-5 text-primary" />
               <span className="font-medium">Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Sign Out" className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+            <SidebarMenuButton tooltip="Sign Out" className="text-destructive hover:text-white hover:bg-destructive transition-colors">
               <LogOut className="w-5 h-5" />
               <span className="font-medium">Sign Out</span>
             </SidebarMenuButton>

@@ -9,7 +9,8 @@ import {
   TrendingUp, 
   Clock, 
   AlertCircle,
-  Activity
+  Activity,
+  CheckCircle2
 } from "lucide-react"
 import { 
   Bar, 
@@ -18,9 +19,7 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  CartesianGrid,
-  Line,
-  LineChart
+  CartesianGrid
 } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
@@ -36,110 +35,89 @@ const data = [
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold font-headline text-primary mb-2">System Overview</h1>
-        <p className="text-muted-foreground">Real-time metrics for studio-3673070449-f277c</p>
+    <div className="space-y-10">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-bold font-headline text-foreground tracking-tight">System Status</h1>
+        <p className="text-muted-foreground text-lg">Real-time metrics and operational overview for CleanSweep.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-            <FolderKanban className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">128</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
-          </CardContent>
-        </Card>
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2,451</div>
-            <p className="text-xs text-muted-foreground">+4% from last hour</p>
-          </CardContent>
-        </Card>
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Database Health</CardTitle>
-            <Database className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">99.9%</div>
-            <p className="text-xs text-muted-foreground">All systems operational</p>
-          </CardContent>
-        </Card>
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Latency</CardTitle>
-            <Activity className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">42ms</div>
-            <p className="text-xs text-muted-foreground">-5ms from yesterday</p>
-          </CardContent>
-        </Card>
+        {[
+          { title: "Total Jobs", value: "128", trend: "+12%", icon: FolderKanban, color: "text-primary" },
+          { title: "Active Cleaners", value: "2,451", trend: "+4%", icon: Users, color: "text-accent" },
+          { title: "Service Health", value: "99.9%", trend: "Stable", icon: CheckCircle2, color: "text-primary" },
+          { title: "Avg. Response", value: "42ms", trend: "-5ms", icon: Activity, color: "text-accent" },
+        ].map((stat, i) => (
+          <Card key={i} className="hover:shadow-lg transition-all border-secondary bg-white overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{stat.title}</CardTitle>
+              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold tracking-tight">{stat.value}</div>
+              <p className="text-xs font-semibold text-primary/80 mt-1">{stat.trend} from last period</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="col-span-1">
+      <div className="grid gap-8 md:grid-cols-3">
+        <Card className="md:col-span-2 border-secondary shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-xl font-bold">
               <TrendingUp className="w-5 h-5 text-primary" />
-              API Requests
+              Service Demand
             </CardTitle>
-            <CardDescription>Daily request volume over the last week</CardDescription>
+            <CardDescription>Job requests across the current week</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[350px] pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--secondary))" />
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                <YAxis fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip 
-                  cursor={{fill: 'hsl(var(--muted))'}}
+                  cursor={{fill: 'hsl(var(--secondary))', opacity: 0.3}}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-white p-3 border rounded-lg shadow-lg">
-                          <p className="font-bold">{payload[0].value} requests</p>
+                        <div className="bg-white p-3 border border-secondary rounded-xl shadow-xl">
+                          <p className="font-bold text-primary">{payload[0].value} jobs</p>
                         </div>
                       )
                     }
                     return null
                   }}
                 />
-                <Bar dataKey="requests" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="requests" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} barSize={40} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="col-span-1">
+        <Card className="border-secondary shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-xl font-bold">
               <Clock className="w-5 h-5 text-accent" />
-              Recent System Logs
+              Activity Feed
             </CardTitle>
-            <CardDescription>Critical system events and warnings</CardDescription>
+            <CardDescription>Recent operational updates</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {[
-                { type: "info", time: "2 min ago", msg: "Project 'Skyline Alpha' created by admin." },
-                { type: "warning", time: "15 min ago", msg: "Spike in authentication failures from 192.168.1.1." },
-                { type: "info", time: "1 hour ago", msg: "Automated database backup completed successfully." },
-                { type: "error", time: "3 hours ago", msg: "Connection timeout on user_permissions table." },
+                { type: "info", time: "2 min ago", msg: "New residential booking: 'Downtown Penthouse'." },
+                { type: "warning", time: "15 min ago", msg: "Late check-in alert for Zone B team." },
+                { type: "info", time: "1 hour ago", msg: "Inventory replenishment order confirmed." },
+                { type: "error", time: "3 hours ago", msg: "Payment gateway timeout on order #442." },
               ].map((log, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-transparent hover:border-border transition-colors">
-                  {log.type === 'error' ? <AlertCircle className="w-4 h-4 text-red-500 mt-1" /> : <Activity className="w-4 h-4 text-muted-foreground mt-1" />}
+                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-secondary/10 border border-transparent hover:border-secondary transition-all">
+                  <div className={`mt-1 p-2 rounded-lg ${log.type === 'error' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
+                    {log.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
+                  </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{log.msg}</p>
-                    <p className="text-xs text-muted-foreground">{log.time}</p>
+                    <p className="text-sm font-semibold text-foreground/90">{log.msg}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-medium tracking-wide uppercase">{log.time}</p>
                   </div>
                 </div>
               ))}
