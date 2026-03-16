@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -11,7 +10,8 @@ import {
   Settings,
   LogOut,
   CheckCircle2,
-  UserCircle
+  UserCircle,
+  Palette
 } from "lucide-react"
 import {
   Sidebar,
@@ -33,6 +33,7 @@ const navigationItems = [
   { name: "Data Explorer", icon: Database, href: "/database" },
   { name: "AI Summary", icon: Sparkles, href: "/ai-summary" },
   { name: "Monitoring", icon: Activity, href: "/monitoring" },
+  { name: "Style Guide", icon: Palette, href: "/style-guide" },
 ]
 
 export function AdminSidebar() {
@@ -42,14 +43,14 @@ export function AdminSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-xl">
       <SidebarHeader className="h-20 flex items-center px-6">
         <div className="flex items-center gap-3">
-          <div className="bg-primary rounded-lg p-2 shadow-lg shadow-primary/20">
+          <div className="bg-accent rounded-lg p-2 shadow-lg shadow-accent/20">
             <CheckCircle2 className="w-6 h-6 text-white" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-headline font-bold text-xl leading-none tracking-tight">
+            <span className="font-headline font-bold text-xl leading-none tracking-tight text-white">
               CleanSweep
             </span>
-            <span className="text-[9px] uppercase tracking-[0.2em] opacity-80 font-bold mt-1 text-primary">
+            <span className="text-[9px] uppercase tracking-[0.2em] opacity-80 font-bold mt-1 text-accent">
               Admin Vault
             </span>
           </div>
@@ -64,10 +65,10 @@ export function AdminSidebar() {
                 asChild
                 isActive={pathname === item.href}
                 tooltip={item.name}
-                className="transition-all duration-200 hover:scale-[1.02] data-[active=true]:bg-primary data-[active=true]:text-white"
+                className="transition-all duration-200 hover:scale-[1.02] data-[active=true]:bg-accent data-[active=true]:text-white"
               >
                 <Link href={item.href} className="flex items-center gap-3">
-                  <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-primary'}`} />
+                  <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-accent'}`} />
                   <span className="font-medium">{item.name}</span>
                 </Link>
               </SidebarMenuButton>
@@ -80,7 +81,7 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Settings" className="opacity-80 hover:opacity-100 hover:bg-sidebar-accent">
-              <Settings className="w-5 h-5 text-primary" />
+              <Settings className="w-5 h-5 text-accent" />
               <span className="font-medium">Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
