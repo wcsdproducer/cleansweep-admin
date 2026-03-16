@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "admin-hero",
+      "description": "Abstract technological background with violet and blue hues",
+      "imageUrl": "https://picsum.photos/seed/admin1/1200/600",
+      "imageHint": "abstract tech"
+    },
+    {
+      "id": "project-thumb-1",
+      "description": "A modern creative workspace",
+      "imageUrl": "https://picsum.photos/seed/p1/400/300",
+      "imageHint": "creative office"
+    },
+    {
+      "id": "project-thumb-2",
+      "description": "Digital UI design concept",
+      "imageUrl": "https://picsum.photos/seed/p2/400/300",
+      "imageHint": "ui design"
+    }
+  ]
 }
