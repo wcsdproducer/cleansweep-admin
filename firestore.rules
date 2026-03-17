@@ -7,13 +7,13 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == "QtKTVNyqnjeZNiOaTJB6m0xaAkn2";
     }
     
-    // Simplified development rules for customers: Allow anyone to read and any authenticated user to write
+    // Simplified development rules for customers
     match /customers/{customerId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
     
-    // Simplified development rules for user profiles: Allow anyone to read
+    // Simplified development rules for user profiles
     match /users/{userId} {
       allow read: if true;
       allow write: if request.auth != null;
@@ -21,6 +21,18 @@ service cloud.firestore {
 
     // Service Providers rules
     match /serviceProviders/{providerId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Provider Coverage rules
+    match /provider_coverage/{coverageId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Zip Codes rules
+    match /zip_codes/{zip} {
       allow read: if true;
       allow write: if request.auth != null;
     }
