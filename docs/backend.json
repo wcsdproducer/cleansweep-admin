@@ -56,7 +56,7 @@
       "schema": "UserProfile",
       "description": "Global user profiles"
     },
-    "/service_providers/{providerId}": {
+    "/serviceProviders/{providerId}": {
       "schema": "ServiceProvider",
       "description": "Registered service providers"
     }

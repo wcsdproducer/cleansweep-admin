@@ -68,7 +68,7 @@ export default function ServiceProvidersPage() {
 
   const providersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, "service_providers"), orderBy("name", "asc"));
+    return query(collection(firestore, "serviceProviders"), orderBy("name", "asc"));
   }, [firestore]);
 
   const { data: providers, loading } = useCollection(providersQuery);
@@ -84,7 +84,7 @@ export default function ServiceProvidersPage() {
 
   const handleDelete = (providerId: string) => {
     if (!firestore) return;
-    const docRef = doc(firestore, "service_providers", providerId);
+    const docRef = doc(firestore, "serviceProviders", providerId);
     
     deleteDoc(docRef).catch(async () => {
       const permissionError = new FirestorePermissionError({
@@ -107,7 +107,7 @@ export default function ServiceProvidersPage() {
       return;
     }
 
-    const colRef = collection(firestore, "service_providers");
+    const colRef = collection(firestore, "serviceProviders");
     const data = {
       ...newProvider,
       status: "Pending",
