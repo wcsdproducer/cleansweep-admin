@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -11,7 +12,9 @@ import {
   CheckCircle2,
   UserCircle,
   Palette,
-  Settings
+  Settings,
+  ShieldCheck,
+  Briefcase
 } from "lucide-react"
 import {
   Sidebar,
@@ -32,6 +35,7 @@ import { usePathname } from "next/navigation"
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { name: "Customers", icon: UserCircle, href: "/customers" },
+  { name: "Service Providers", icon: Briefcase, href: "/service-providers" },
   { name: "Users", icon: Users, href: "/users" },
   { name: "Data Explorer", icon: Database, href: "/database" },
   { name: "AI Summary", icon: Sparkles, href: "/ai-summary" },
@@ -45,6 +49,11 @@ const settingsItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-xl">
@@ -73,12 +82,12 @@ export function AdminSidebar() {
                 <SidebarMenuItem key={item.name} className="mb-1">
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={mounted && pathname === item.href}
                     tooltip={item.name}
                     className="transition-all duration-200 hover:scale-[1.02] data-[active=true]:bg-accent data-[active=true]:text-white text-white/80"
                   >
                     <Link href={item.href} className="flex items-center gap-3">
-                      <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-accent'}`} />
+                      <item.icon className={`w-5 h-5 ${mounted && pathname === item.href ? 'text-white' : 'text-accent'}`} />
                       <span className="font-medium">{item.name}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -96,12 +105,12 @@ export function AdminSidebar() {
                 <SidebarMenuItem key={item.name} className="mb-1">
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={mounted && pathname === item.href}
                     tooltip={item.name}
                     className="transition-all duration-200 hover:scale-[1.02] data-[active=true]:bg-accent data-[active=true]:text-white text-white/80"
                   >
                     <Link href={item.href} className="flex items-center gap-3">
-                      <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-accent'}`} />
+                      <item.icon className={`w-5 h-5 ${mounted && pathname === item.href ? 'text-white' : 'text-accent'}`} />
                       <span className="font-medium">{item.name}</span>
                     </Link>
                   </SidebarMenuButton>

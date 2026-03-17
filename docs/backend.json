@@ -27,6 +27,21 @@
         "avatar": { "type": "string", "description": "Seed for avatar generation" }
       },
       "required": ["name", "email", "role"]
+    },
+    "ServiceProvider": {
+      "title": "Service Provider",
+      "description": "A contractor or cleaning professional",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "category": { "type": "string", "enum": ["Residential", "Commercial", "Deep Clean", "Industrial"] },
+        "status": { "type": "string", "enum": ["Active", "Inactive", "Pending"] },
+        "rating": { "type": "number" },
+        "joinedDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "category"]
     }
   },
   "auth": {
@@ -40,6 +55,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Global user profiles"
+    },
+    "/service_providers/{providerId}": {
+      "schema": "ServiceProvider",
+      "description": "Registered service providers"
     }
   }
 }
