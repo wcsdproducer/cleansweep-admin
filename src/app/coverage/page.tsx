@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useFirestore, useCollection } from "@/firebase"
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
 import { collection } from "firebase/firestore"
 import { Loader } from "@googlemaps/js-api-loader"
 
@@ -36,14 +36,17 @@ export default function CoveragePage() {
   const mapRef = React.useRef<HTMLDivElement>(null)
   const firestore = useFirestore()
   
-  const { data: providers, loading: providersLoading } = useCollection<any>(
-    collection(firestore, "serviceProviders")
-  )
+  const providersRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, "serviceProviders");
+  }, [firestore]);
+
+  const { data: providers, loading: providersLoading } = useCollection<any>(providersRef);
 
   // Initialize Google Maps
   React.useEffect(() => {
     const loader = new Loader({
-      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY",
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
       version: "weekly",
       libraries: ["visualization", "geometry", "places"]
     })
@@ -106,7 +109,7 @@ export default function CoveragePage() {
         })
         circlesRef.current.push(circle)
 
-        // Add to Heatmap (Weight by radius or status)
+        // Add to Heatmap
         heatmapData.push(center)
       }
     })
@@ -138,7 +141,7 @@ export default function CoveragePage() {
 
   // Handle Dead Zone Detection Logic
   React.useEffect(() => {
-    if (!clickedCoord || providersLoading) return
+    if (!clickedCoord || providersLoading || !googleLoaded) return
 
     const clickPoint = new google.maps.LatLng(clickedCoord.lat, clickedCoord.lng)
     const covering = providers.filter(p => {
@@ -149,10 +152,10 @@ export default function CoveragePage() {
     })
 
     setSelectedPointProviders(covering)
-  }, [clickedCoord, providers, providersLoading])
+  }, [clickedCoord, providers, providersLoading, googleLoaded])
 
   const handleSearch = () => {
-    if (!map || !address) return
+    if (!map || !address || !googleLoaded) return
     const geocoder = new google.maps.Geocoder()
     geocoder.geocode({ address }, (results, status) => {
       if (status === "OK" && results?.[0]?.geometry?.location) {
@@ -297,7 +300,7 @@ export default function CoveragePage() {
               <span className="text-xs font-bold text-muted-foreground">Provider Density</span>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   )
