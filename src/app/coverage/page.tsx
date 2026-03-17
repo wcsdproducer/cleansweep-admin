@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Loader2, Map as MapIcon, Filter, Search, Info, Target, Users, AlertTriangle, ExternalLink } from "lucide-react"
+import { Loader2, Map as MapIcon, Filter, Search, Target, Users, AlertTriangle, ExternalLink } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -49,7 +49,7 @@ export default function CoveragePage() {
   React.useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     
-    if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
+    if (!apiKey || apiKey === "YOUR_API_KEY_HERE" || apiKey.trim() === "") {
       setGoogleError("API_KEY_MISSING");
       return;
     }
@@ -62,6 +62,7 @@ export default function CoveragePage() {
 
     loader.load().then(() => {
       setGoogleLoaded(true)
+      setGoogleError(null)
     }).catch((e) => {
       console.error("Google Maps load error:", e)
       setGoogleError("LOAD_FAILED")
@@ -141,7 +142,7 @@ export default function CoveragePage() {
 
     const clickPoint = new google.maps.LatLng(clickedCoord.lat, clickedCoord.lng)
     const covering = (providers || []).filter(p => {
-      if (!p.service_center?.lat) return false
+      if (!p.service_center?.lat || !p.service_center?.lng) return false
       const pCenter = new google.maps.LatLng(p.service_center.lat, p.service_center.lng)
       const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPoint, pCenter)
       return distance <= (p.radius_miles || 20) * 1609.34
@@ -196,9 +197,6 @@ export default function CoveragePage() {
                 Get API Key
               </Button>
             </div>
-            <p className="text-xs opacity-70 italic">
-              After obtaining a key, add it to your environment variables as <strong>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</strong>.
-            </p>
           </AlertDescription>
         </Alert>
       )}
@@ -315,7 +313,9 @@ export default function CoveragePage() {
               </div>
               <h3 className="text-lg font-bold text-muted-foreground">Map Unavailable</h3>
               <p className="text-sm text-muted-foreground max-w-xs mt-2">
-                Configure your Google Maps API key to activate the spatial dashboard.
+                {googleError === "API_KEY_MISSING" 
+                  ? "Configure your Google Maps API key to activate the spatial dashboard."
+                  : "An error occurred while loading the map. Please check your API key and connection."}
               </p>
             </div>
           )}
