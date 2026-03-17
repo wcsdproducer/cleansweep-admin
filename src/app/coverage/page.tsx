@@ -1,15 +1,13 @@
-
 "use client"
 
 import * as React from "react"
-import { Loader2, Map as MapIcon, Filter, Search, Target, Users, AlertTriangle, ExternalLink, Save, Info } from "lucide-react"
+import { Loader2, Map as MapIcon, Filter, Search, Target, Users, AlertTriangle, Save } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, serverTimestamp, addDoc } from "firebase/firestore"
 import { Loader } from "@googlemaps/js-api-loader"
@@ -51,7 +49,7 @@ export default function CoveragePage() {
   const { data: providers, loading: providersLoading } = useCollection<any>(providersRef);
 
   React.useEffect(() => {
-    const apiKey = "AIzaSyAlOFuBM-8PnXGMgNRvmr9BZTTzY97ptrI";
+    const apiKey = "AIzaSyCSPFEkDyRV8L3OzROcizzb6TBwv8m3zPc";
     
     const loader = new Loader({
       apiKey: apiKey,
@@ -63,7 +61,6 @@ export default function CoveragePage() {
       setGoogleLoaded(true)
       setGoogleError(null)
     }).catch((e) => {
-      console.error("Maps Load Error:", e)
       setGoogleError("API_ERROR")
     })
   }, [])

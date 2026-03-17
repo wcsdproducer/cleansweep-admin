@@ -1,8 +1,7 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Explicitly allow access to all core collections for the admin portal
+    // Explicitly allow access to all core collections for the admin portal prototyping
     match /serviceProviders/{document=**} {
       allow read, write: if true;
     }
