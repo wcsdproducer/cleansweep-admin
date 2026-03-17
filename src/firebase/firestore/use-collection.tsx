@@ -16,6 +16,9 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    // Reset loading state when the query changes
+    setLoading(true);
+
     if (!query) {
       setLoading(false);
       return;
@@ -24,7 +27,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
     const unsubscribe = onSnapshot(
       query,
       (snapshot: QuerySnapshot<T>) => {
-        setData(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+        setData(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id } as T)));
         setLoading(false);
       },
       async (serverError) => {

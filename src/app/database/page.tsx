@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -12,38 +11,41 @@ import {
 } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Database, Filter, Download, RefreshCw, Pencil, Trash } from "lucide-react"
+import { Database, Filter, Download, RefreshCw, Pencil, Trash, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, query, orderBy, limit } from "firebase/firestore"
+import { useMemoFirebase } from "@/firebase/firestore/use-memo-firebase"
 
-const TABLES = ["customers", "users", "sessions", "logs", "billing"]
-
-const MOCK_DATA: Record<string, any[]> = {
-  customers: [
-    { id: "bk0266qyVpU0smIdyRwaSEzA6Wn1", firstName: "John", lastName: "Freeman", email: "workonnotin@gmail.com", loyaltyCredits: 0 },
-    { id: "bk0266qyVpU0smIdyRwaSEzA6Wn2", firstName: "Jane", lastName: "Smith", email: "jane.smith@example.com", loyaltyCredits: 150 },
-  ],
-  users: [
-    { id: 101, username: "admin_vault", email: "admin@vault.com", last_login: "2024-03-15" },
-    { id: 102, username: "dev_user", email: "dev@vault.com", last_login: "2024-03-14" },
-  ]
-}
+const TABLES = ["customers", "users", "serviceProviders", "sessions", "logs", "billing"]
 
 export default function DatabasePage() {
   const [selectedTable, setSelectedTable] = React.useState("customers")
-  const currentData = MOCK_DATA[selectedTable] || []
+  const firestore = useFirestore()
+
+  const dataQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    try {
+      return query(collection(firestore, selectedTable), limit(50));
+    } catch (e) {
+      return null;
+    }
+  }, [firestore, selectedTable]);
+
+  const { data: currentData, loading } = useCollection(dataQuery);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline text-primary">Data Explorer</h1>
-          <p className="text-muted-foreground">Direct access to 'studio-3673070449-f277c' database tables</p>
+          <p className="text-muted-foreground">Direct access to live database collections</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
             <Download className="w-4 h-4 mr-2" /> Export JSON
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
             <RefreshCw className="w-4 h-4 mr-2" /> Refresh
           </Button>
         </div>
@@ -72,49 +74,60 @@ export default function DatabasePage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {currentData.length > 0 && Object.keys(currentData[0]).map(key => (
-                    <TableHead key={key} className="capitalize font-mono text-xs">{key}</TableHead>
-                  ))}
-                  <TableHead className="text-right">Manage</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentData.map((row, i) => (
-                  <TableRow key={i}>
-                    {Object.values(row).map((val, j) => (
-                      <TableCell key={j} className="text-sm truncate max-w-[200px]">
-                        {String(val)}
-                      </TableCell>
-                    ))}
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Pencil className="w-3 h-3" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
-                          <Trash className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          {loading ? (
+            <div className="p-20 flex flex-col items-center justify-center gap-4">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              <p className="text-sm text-muted-foreground">Loading records from {selectedTable}...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {currentData && currentData.length > 0 ? (
+                      Object.keys(currentData[0]).map(key => (
+                        <TableHead key={key} className="capitalize font-mono text-xs">{key}</TableHead>
+                      ))
+                    ) : (
+                      <TableHead>No Fields Found</TableHead>
+                    )}
+                    <TableHead className="text-right">Manage</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          {currentData.length === 0 && (
+                </TableHeader>
+                <TableBody>
+                  {currentData && currentData.map((row: any, i) => (
+                    <TableRow key={row.id || i}>
+                      {Object.values(row).map((val, j) => (
+                        <TableCell key={j} className="text-sm truncate max-w-[200px]">
+                          {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Pencil className="w-3 h-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                            <Trash className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+          {!loading && (!currentData || currentData.length === 0) && (
             <div className="p-12 text-center">
-              <p className="text-muted-foreground">No records found in table '{selectedTable}'</p>
+              <p className="text-muted-foreground">No records found in collection '{selectedTable}'</p>
             </div>
           )}
         </CardContent>
       </Card>
 
       <div className="flex justify-between items-center text-sm text-muted-foreground">
-        <p>Showing {currentData.length} records</p>
+        <p>Showing {currentData?.length || 0} records</p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" disabled>Previous</Button>
           <Button variant="outline" size="sm" disabled>Next</Button>
