@@ -2,13 +2,14 @@
 "use client"
 
 import * as React from "react"
-import { Loader2, Map as MapIcon, Filter, Search, Info, Target, Users } from "lucide-react"
+import { Loader2, Map as MapIcon, Filter, Search, Info, Target, Users, AlertTriangle, ExternalLink } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
 import { collection } from "firebase/firestore"
 import { Loader } from "@googlemaps/js-api-loader"
@@ -28,6 +29,7 @@ const MAP_STYLE_SILVER = [
 export default function CoveragePage() {
   const [map, setMap] = React.useState<google.maps.Map | null>(null)
   const [googleLoaded, setGoogleLoaded] = React.useState(false)
+  const [googleError, setGoogleError] = React.useState<string | null>(null)
   const [address, setAddress] = React.useState("")
   const [filterType, setFilterType] = React.useState("All")
   const [selectedPointProviders, setSelectedPointProviders] = React.useState<any[]>([])
@@ -45,14 +47,24 @@ export default function CoveragePage() {
 
   // Initialize Google Maps
   React.useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    
+    if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
+      setGoogleError("API_KEY_MISSING");
+      return;
+    }
+
     const loader = new Loader({
-      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+      apiKey: apiKey,
       version: "weekly",
       libraries: ["visualization", "geometry", "places"]
     })
 
     loader.load().then(() => {
       setGoogleLoaded(true)
+    }).catch((e) => {
+      console.error("Google Maps load error:", e)
+      setGoogleError("LOAD_FAILED")
     })
   }, [])
 
@@ -89,7 +101,7 @@ export default function CoveragePage() {
     circlesRef.current = []
     if (heatmapRef.current) heatmapRef.current.setMap(null)
 
-    const filtered = providers.filter(p => filterType === "All" || p.category === filterType)
+    const filtered = (providers || []).filter(p => filterType === "All" || p.category === filterType)
     const heatmapData: google.maps.LatLng[] = []
 
     filtered.forEach(p => {
@@ -120,22 +132,6 @@ export default function CoveragePage() {
       map: map,
       radius: 50,
       opacity: 0.6,
-      gradient: [
-        "rgba(0, 255, 255, 0)",
-        "rgba(0, 255, 255, 1)",
-        "rgba(0, 191, 255, 1)",
-        "rgba(0, 127, 255, 1)",
-        "rgba(0, 63, 255, 1)",
-        "rgba(0, 0, 255, 1)",
-        "rgba(0, 0, 223, 1)",
-        "rgba(0, 0, 191, 1)",
-        "rgba(0, 0, 159, 1)",
-        "rgba(0, 0, 127, 1)",
-        "rgba(63, 0, 91, 1)",
-        "rgba(127, 0, 63, 1)",
-        "rgba(191, 0, 31, 1)",
-        "rgba(255, 0, 0, 1)"
-      ]
     })
   }, [map, googleLoaded, providers, providersLoading, filterType])
 
@@ -144,7 +140,7 @@ export default function CoveragePage() {
     if (!clickedCoord || providersLoading || !googleLoaded) return
 
     const clickPoint = new google.maps.LatLng(clickedCoord.lat, clickedCoord.lng)
-    const covering = providers.filter(p => {
+    const covering = (providers || []).filter(p => {
       if (!p.service_center?.lat) return false
       const pCenter = new google.maps.LatLng(p.service_center.lat, p.service_center.lng)
       const distance = google.maps.geometry.spherical.computeDistanceBetween(clickPoint, pCenter)
@@ -178,10 +174,34 @@ export default function CoveragePage() {
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 gap-1 px-3 py-1">
             <Users className="w-4 h-4" />
-            {providers.length} Active Providers
+            {providers?.length || 0} Active Providers
           </Badge>
         </div>
       </div>
+
+      {googleError === "API_KEY_MISSING" && (
+        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle className="font-bold">Google Maps API Key Required</AlertTitle>
+          <AlertDescription className="space-y-4 pt-2">
+            <p>To view the coverage map, you need a valid Google Maps JavaScript API key.</p>
+            <div className="flex flex-wrap gap-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-white border-destructive/20 hover:bg-destructive/5"
+                onClick={() => window.open("https://console.cloud.google.com/google/maps-apis/credentials", "_blank")}
+              >
+                <ExternalLink className="w-3 h-3 mr-2" />
+                Get API Key
+              </Button>
+            </div>
+            <p className="text-xs opacity-70 italic">
+              After obtaining a key, add it to your environment variables as <strong>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</strong>.
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
         {/* Sidebar Controls */}
@@ -202,8 +222,9 @@ export default function CoveragePage() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    disabled={!googleLoaded}
                   />
-                  <Button size="icon" variant="secondary" onClick={handleSearch}>
+                  <Button size="icon" variant="secondary" onClick={handleSearch} disabled={!googleLoaded}>
                     <Search className="w-4 h-4" />
                   </Button>
                 </div>
@@ -279,27 +300,40 @@ export default function CoveragePage() {
         </div>
 
         {/* Map Container */}
-        <Card className="flex-1 relative overflow-hidden bg-white border-2">
-          {!googleLoaded ? (
+        <Card className="flex-1 relative overflow-hidden bg-muted/5 border-2">
+          {!googleLoaded && !googleError && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/20 gap-4">
               <Loader2 className="w-12 h-12 text-primary animate-spin" />
               <p className="text-sm font-bold text-muted-foreground">Loading Coverage Engine...</p>
             </div>
-          ) : (
-            <div ref={mapRef} className="w-full h-full" />
+          )}
+          
+          {googleError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-muted/5">
+              <div className="p-4 bg-white rounded-full shadow-sm mb-4">
+                <MapIcon className="w-12 h-12 text-muted-foreground/40" />
+              </div>
+              <h3 className="text-lg font-bold text-muted-foreground">Map Unavailable</h3>
+              <p className="text-sm text-muted-foreground max-w-xs mt-2">
+                Configure your Google Maps API key to activate the spatial dashboard.
+              </p>
+            </div>
           )}
 
-          {/* Map Legend Floating Overlay */}
-          <div className="absolute bottom-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-primary/40 border border-primary" />
-              <span className="text-xs font-bold text-muted-foreground">Service Radius</span>
+          <div ref={mapRef} className={`w-full h-full ${!googleLoaded ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'}`} />
+
+          {googleLoaded && (
+            <div className="absolute bottom-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-primary/40 border border-primary" />
+                <span className="text-xs font-bold text-muted-foreground">Service Radius</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-cyan-400 to-red-500" />
+                <span className="text-xs font-bold text-muted-foreground">Provider Density</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-cyan-400 to-red-500" />
-              <span className="text-xs font-bold text-muted-foreground">Provider Density</span>
-            </div>
-          </div>
+          )}
         </Card>
       </div>
     </div>
