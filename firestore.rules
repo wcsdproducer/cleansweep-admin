@@ -2,44 +2,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Grant full read and write access to the specified administrative user
+    // Development Mode: Allow full read and write access to all collections
+    // to unblock development and provide a smooth prototyping experience.
+    // This should be restricted with proper security logic before production.
     match /{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == "QtKTVNyqnjeZNiOaTJB6m0xaAkn2";
-    }
-    
-    // Simplified development rules for customers
-    match /customers/{customerId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    // Simplified development rules for user profiles
-    match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
-    // Service Providers rules
-    match /serviceProviders/{providerId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    // Provider Coverage rules
-    match /provider_coverage/{coverageId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
-    // Zip Codes rules
-    match /zip_codes/{zip} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    // Default fallback: allow read for other collections during development
-    match /{document=**} {
-      allow read: if true;
+      allow read, write: if true;
     }
   }
 }
