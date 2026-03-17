@@ -12,17 +12,20 @@ import {
 } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Database, Download, RefreshCw, Pencil, Trash, Loader2, AlertCircle } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Database, RefreshCw, Trash, Loader2, AlertCircle } from "lucide-react"
 import { useFirestore, useCollection } from "@/firebase"
-import { collection, query, limit } from "firebase/firestore"
+import { collection, query, limit, doc, deleteDoc } from "firebase/firestore"
 import { useMemoFirebase } from "@/firebase/firestore/use-memo-firebase"
+import { useToast } from "@/hooks/use-toast"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
 
-const TABLES = ["customers", "users", "serviceProviders"]
+const TABLES = ["customers", "users", "serviceProviders", "zip_codes", "provider_coverage"]
 
 export default function DatabasePage() {
   const [selectedTable, setSelectedTable] = React.useState("serviceProviders")
   const firestore = useFirestore()
+  const { toast } = useToast()
 
   const dataQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -39,6 +42,24 @@ export default function DatabasePage() {
     });
     return Array.from(keys);
   }, [currentData]);
+
+  const handleDelete = (id: string) => {
+    if (!firestore || !selectedTable) return;
+    const docRef = doc(firestore, selectedTable, id);
+    
+    deleteDoc(docRef).catch(async () => {
+      const permissionError = new FirestorePermissionError({
+        path: docRef.path,
+        operation: 'delete',
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    });
+
+    toast({
+      title: "Action Initiated",
+      description: `Delete request for document ${id} sent to the database.`,
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -112,7 +133,12 @@ export default function DatabasePage() {
                       ))}
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-destructive"
+                            onClick={() => handleDelete(row.id)}
+                          >
                             <Trash className="w-3 h-3" />
                           </Button>
                         </div>

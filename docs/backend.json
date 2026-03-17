@@ -62,6 +62,23 @@
         "last_customer_request_date": { "type": "string", "format": "date-time" },
         "unfilled_leads": { "type": "number" }
       }
+    },
+    "ProviderCoverage": {
+      "title": "Provider Coverage Area",
+      "description": "Spatial definition of a service area",
+      "type": "object",
+      "properties": {
+        "center": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "radius": { "type": "number" },
+        "selectedZips": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "auth": {
@@ -83,6 +100,10 @@
     "/zip_codes/{zip}": {
       "schema": "ZipCode",
       "description": "Coverage monitoring per ZIP code"
+    },
+    "/provider_coverage/{coverageId}": {
+      "schema": "ProviderCoverage",
+      "description": "Defined service areas for providers"
     }
   }
 }
