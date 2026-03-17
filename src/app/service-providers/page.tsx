@@ -13,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
-  UserPlus, 
   Search, 
   MoreVertical, 
   Edit2, 
@@ -23,7 +22,8 @@ import {
   ShieldCheck,
   Filter,
   RefreshCcw,
-  Plus
+  Plus,
+  AlertCircle
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { 
@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useCollection } from "@/firebase"
-import { collection, query, orderBy, doc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, query, doc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore"
 import { useMemoFirebase } from "@/firebase/firestore/use-memo-firebase"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
@@ -68,10 +68,10 @@ export default function ServiceProvidersPage() {
   })
   const firestore = useFirestore()
 
-  // Ensure collection name matches backend.json exactly: serviceProviders
+  // Using a simple collection query to avoid indexing issues during development
   const providersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, "serviceProviders"), orderBy("name", "asc"));
+    return collection(firestore, "serviceProviders");
   }, [firestore]);
 
   const { data: providers, loading, error } = useCollection(providersQuery);
@@ -82,10 +82,10 @@ export default function ServiceProvidersPage() {
     
     const searchLower = search.toLowerCase();
     return providers.filter(p => {
-      const nameMatch = p.name?.toLowerCase().includes(searchLower);
-      const emailMatch = p.email?.toLowerCase().includes(searchLower);
-      const categoryMatch = p.category?.toLowerCase().includes(searchLower);
-      return nameMatch || emailMatch || categoryMatch;
+      const name = String(p.name || "").toLowerCase();
+      const email = String(p.email || "").toLowerCase();
+      const category = String(p.category || "").toLowerCase();
+      return name.includes(searchLower) || email.includes(searchLower) || category.includes(searchLower);
     });
   }, [providers, search]);
 
@@ -103,21 +103,21 @@ export default function ServiceProvidersPage() {
 
     toast({
       title: "Action Initiated",
-      description: "Delete request sent to the database.",
+      description: "Delete request sent.",
     })
   }
 
   const handleAddProvider = () => {
     if (!firestore) return;
-    if (!newProvider.name || !newProvider.email || !newProvider.category) {
-      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" });
+    if (!newProvider.name || !newProvider.email) {
+      toast({ title: "Validation Error", description: "Name and Email are required.", variant: "destructive" });
       return;
     }
 
     const colRef = collection(firestore, "serviceProviders");
     const data = {
       ...newProvider,
-      status: "Pending",
+      status: "Active",
       rating: 5.0,
       joinedDate: new Date().toISOString(),
       createdAt: serverTimestamp(),
@@ -136,7 +136,7 @@ export default function ServiceProvidersPage() {
     setNewProvider({ name: "", email: "", phone: "", category: "Residential" });
     toast({
       title: "Success",
-      description: "Provider registration request sent.",
+      description: "Provider creation initiated.",
     });
   }
 
@@ -145,13 +145,13 @@ export default function ServiceProvidersPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline text-primary">Service Providers</h1>
-          <p className="text-muted-foreground">Manage your cleaning professionals and contractors</p>
+          <p className="text-muted-foreground">Network management for cleaning professionals</p>
         </div>
         
         <div className="flex gap-2">
            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
             <RefreshCcw className="w-4 h-4 mr-2" />
-            Refresh
+            Sync
           </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
@@ -162,9 +162,9 @@ export default function ServiceProvidersPage() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Register New Provider</DialogTitle>
+                <DialogTitle>Add Provider</DialogTitle>
                 <DialogDescription>
-                  Onboard a new service professional to the CleanSweep network.
+                  Register a new cleaning professional to the database.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -188,15 +188,6 @@ export default function ServiceProvidersPage() {
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="phone" className="text-right">Phone</Label>
-                  <Input 
-                    id="phone" 
-                    value={newProvider.phone} 
-                    onChange={(e) => setNewProvider(prev => ({ ...prev, phone: e.target.value }))}
-                    className="col-span-3" 
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="category" className="text-right">Category</Label>
                   <Select 
                     value={newProvider.category} 
@@ -216,7 +207,7 @@ export default function ServiceProvidersPage() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddProvider} className="bg-primary text-white">Register</Button>
+                <Button onClick={handleAddProvider} className="bg-primary text-white">Save</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -227,28 +218,32 @@ export default function ServiceProvidersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
-            placeholder="Search by name, email or category..." 
+            placeholder="Search providers..." 
             className="pl-10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Button variant="outline" size="icon">
-          <Filter className="w-4 h-4" />
-        </Button>
       </div>
+
+      {error && (
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-3 text-destructive">
+          <AlertCircle className="w-5 h-5" />
+          <p className="text-sm font-medium">Error loading data: {error.message}</p>
+        </div>
+      )}
 
       <div className="border rounded-xl bg-white overflow-hidden shadow-sm">
         {loading ? (
           <div className="p-12 flex flex-col items-center justify-center gap-4">
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            <p className="text-muted-foreground animate-pulse">Syncing provider network...</p>
+            <p className="text-muted-foreground animate-pulse">Syncing service providers...</p>
           </div>
         ) : (
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead>Provider</TableHead>
+                <TableHead>Provider Details</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Rating</TableHead>
@@ -260,20 +255,19 @@ export default function ServiceProvidersPage() {
                 <TableRow key={provider.id}>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-semibold text-sm">{provider.name || 'Unnamed Provider'}</span>
-                      <span className="text-xs text-muted-foreground">{provider.email || 'No email provided'}</span>
+                      <span className="font-semibold text-sm">{provider.name || 'Unnamed'}</span>
+                      <span className="text-xs text-muted-foreground">{provider.email || 'No email'}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="font-medium">
-                      {provider.category || 'General'}
+                      {provider.category || 'Standard'}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
-                        provider.status === 'Active' ? 'bg-green-500' : 
-                        provider.status === 'Pending' ? 'bg-amber-500' : 'bg-gray-400'
+                        provider.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'
                       }`} />
                       <span className="text-sm">{provider.status || 'Active'}</span>
                     </div>
@@ -281,7 +275,7 @@ export default function ServiceProvidersPage() {
                   <TableCell>
                     <div className="flex items-center gap-1 text-amber-500">
                       <Star className="w-4 h-4 fill-current" />
-                      <span className="text-sm font-bold text-foreground">{provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}</span>
+                      <span className="text-sm font-bold text-foreground">{Number(provider.rating || 5).toFixed(1)}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -293,16 +287,13 @@ export default function ServiceProvidersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem className="gap-2">
-                          <Edit2 className="w-4 h-4" /> Edit Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2">
-                          <ShieldCheck className="w-4 h-4" /> Verify Credentials
+                          <Edit2 className="w-4 h-4" /> Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="gap-2 text-destructive"
                           onClick={() => handleDelete(provider.id)}
                         >
-                          <Trash2 className="w-4 h-4" /> Terminate
+                          <Trash2 className="w-4 h-4" /> Remove
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -311,18 +302,9 @@ export default function ServiceProvidersPage() {
               )) : (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-20">
-                    <div className="flex flex-col items-center gap-2">
-                      <p className="text-muted-foreground font-medium">No service providers found.</p>
-                      <p className="text-xs text-muted-foreground/60">Try adding a new provider or checking your database connection.</p>
-                      <Button 
-                        variant="link" 
-                        size="sm" 
-                        onClick={() => setIsAddDialogOpen(true)}
-                        className="text-primary mt-2"
-                      >
-                        <Plus className="w-3 h-3 mr-1" />
-                        Add your first provider
-                      </Button>
+                    <div className="flex flex-col items-center gap-2 opacity-60">
+                      <p className="text-muted-foreground font-medium">No service providers listed yet.</p>
+                      <p className="text-xs">Add your first professional using the button above.</p>
                     </div>
                   </TableCell>
                 </TableRow>

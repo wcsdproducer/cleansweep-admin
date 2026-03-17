@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   Select, 
   SelectContent, 
@@ -12,13 +12,12 @@ import {
 } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Database, Filter, Download, RefreshCw, Pencil, Trash, Loader2 } from "lucide-react"
+import { Database, Download, RefreshCw, Pencil, Trash, Loader2, AlertCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useFirestore, useCollection } from "@/firebase"
 import { collection, query, limit } from "firebase/firestore"
 import { useMemoFirebase } from "@/firebase/firestore/use-memo-firebase"
 
-// Ensure collection names match backend.json
 const TABLES = ["customers", "users", "serviceProviders"]
 
 export default function DatabasePage() {
@@ -27,52 +26,54 @@ export default function DatabasePage() {
 
   const dataQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    try {
-      return query(collection(firestore, selectedTable), limit(50));
-    } catch (e) {
-      console.error("Database query failed:", e);
-      return null;
-    }
+    return query(collection(firestore, selectedTable), limit(100));
   }, [firestore, selectedTable]);
 
-  const { data: currentData, loading } = useCollection(dataQuery);
+  const { data: currentData, loading, error } = useCollection(dataQuery);
+
+  const tableHeaders = React.useMemo(() => {
+    if (!currentData || currentData.length === 0) return ["id"];
+    const keys = new Set<string>();
+    currentData.forEach(row => {
+      Object.keys(row).forEach(key => keys.add(key));
+    });
+    return Array.from(keys);
+  }, [currentData]);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline text-primary">Data Explorer</h1>
-          <p className="text-muted-foreground">Direct access to live database collections</p>
+          <p className="text-muted-foreground">Real-time inspection of your {selectedTable} collection</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" /> Export JSON
-          </Button>
           <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-            <RefreshCw className="w-4 h-4 mr-2" /> Refresh
+            <RefreshCw className="w-4 h-4 mr-2" /> Force Refresh
           </Button>
         </div>
       </div>
 
+      {error && (
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-3 text-destructive">
+          <AlertCircle className="w-5 h-5" />
+          <p className="text-sm font-medium">Access Error: {error.message}</p>
+        </div>
+      )}
+
       <Card>
-        <CardHeader className="border-b bg-muted/20">
+        <CardHeader className="border-b bg-muted/20 py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Database className="w-5 h-5 text-primary" />
               <Select value={selectedTable} onValueChange={setSelectedTable}>
-                <SelectTrigger className="w-[200px] bg-white">
-                  <SelectValue placeholder="Select table" />
+                <SelectTrigger className="w-[220px] bg-white">
+                  <SelectValue placeholder="Select collection" />
                 </SelectTrigger>
                 <SelectContent>
                   {TABLES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Filter results..." className="pl-10 h-9 w-[250px] bg-white" />
-              </div>
             </div>
           </div>
         </CardHeader>
@@ -80,66 +81,60 @@ export default function DatabasePage() {
           {loading ? (
             <div className="p-20 flex flex-col items-center justify-center gap-4">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
-              <p className="text-sm text-muted-foreground">Loading records from {selectedTable}...</p>
+              <p className="text-sm text-muted-foreground animate-pulse">Querying collection...</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    {currentData && currentData.length > 0 ? (
-                      Object.keys(currentData[0]).map(key => (
-                        <TableHead key={key} className="capitalize font-mono text-xs">{key}</TableHead>
-                      ))
-                    ) : (
-                      <TableHead>No Fields Found</TableHead>
-                    )}
-                    <TableHead className="text-right">Manage</TableHead>
+                  <TableRow className="bg-muted/30">
+                    {tableHeaders.map(header => (
+                      <TableHead key={header} className="font-mono text-[10px] uppercase tracking-wider font-bold">
+                        {header}
+                      </TableHead>
+                    ))}
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {currentData && currentData.map((row: any, i) => (
-                    <TableRow key={row.id || i}>
-                      {Object.values(row).map((val, j) => (
-                        <TableCell key={j} className="text-sm truncate max-w-[200px]">
-                          {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+                  {currentData && currentData.length > 0 ? currentData.map((row: any, i) => (
+                    <TableRow key={row.id || i} className="hover:bg-muted/10 transition-colors">
+                      {tableHeaders.map(header => (
+                        <TableCell key={`${i}-${header}`} className="text-xs font-mono truncate max-w-[150px]">
+                          {row[header] !== undefined ? (
+                            typeof row[header] === 'object' ? 
+                              JSON.stringify(row[header]).substring(0, 50) + '...' : 
+                              String(row[header])
+                          ) : (
+                            <span className="text-muted-foreground/30">null</span>
+                          )}
                         </TableCell>
                       ))}
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Pencil className="w-3 h-3" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
                             <Trash className="w-3 h-3" />
                           </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan={tableHeaders.length + 1} className="py-24 text-center">
+                        <div className="flex flex-col items-center gap-2 opacity-40">
+                          <Database className="w-12 h-12 mb-2" />
+                          <p className="text-sm font-medium">No records found in "{selectedTable}"</p>
+                          <p className="text-xs">Data will appear here once added to the database.</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>
           )}
-          {!loading && (!currentData || currentData.length === 0) && (
-            <div className="p-20 text-center">
-              <div className="flex flex-col items-center gap-2 opacity-60">
-                <Database className="w-10 h-10 mb-2" />
-                <p className="text-muted-foreground">No records found in collection '{selectedTable}'</p>
-                <p className="text-xs">Ensure data has been added through the management pages.</p>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
-
-      <div className="flex justify-between items-center text-sm text-muted-foreground">
-        <p>Showing {currentData?.length || 0} records</p>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled>Previous</Button>
-          <Button variant="outline" size="sm" disabled>Next</Button>
-        </div>
-      </div>
     </div>
   )
 }
