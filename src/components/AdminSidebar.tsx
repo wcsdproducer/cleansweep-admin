@@ -7,11 +7,11 @@ import {
   Database,
   Sparkles,
   Activity,
-  Settings,
   LogOut,
   CheckCircle2,
   UserCircle,
-  Palette
+  Palette,
+  Settings
 } from "lucide-react"
 import {
   Sidebar,
@@ -39,6 +39,7 @@ const navigationItems = [
 ]
 
 const settingsItems = [
+  { name: "Settings", icon: Settings, href: "/settings" },
   { name: "Style Guide", icon: Palette, href: "/style-guide" },
 ]
 
@@ -63,7 +64,7 @@ export function AdminSidebar() {
         </div>
       </SidebarHeader>
       <SidebarSeparator className="opacity-10" />
-      <SidebarContent className="p-3">
+      <SidebarContent className="p-3 flex flex-col justify-between">
         <SidebarGroup>
           <SidebarGroupLabel className="text-white/40 px-2 py-4">Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -87,8 +88,8 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className="text-white/40 px-2 py-4">Settings</SidebarGroupLabel>
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel className="text-white/40 px-2 py-4">Configuration</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {settingsItems.map((item) => (
