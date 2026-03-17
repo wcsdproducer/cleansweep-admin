@@ -52,7 +52,7 @@ export default function CoveragePage() {
 
   // Initialize Google Maps
   React.useEffect(() => {
-    const apiKey = "AIzaSyAvVbc9cKhziKY4FEOhWJSxmUVExwN7KNY";
+    const apiKey = "AIzaSyAlOFuBM-8PnXGMgNRvmr9BZTTzY97ptrI";
     
     const loader = new Loader({
       apiKey: apiKey,

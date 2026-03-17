@@ -2,9 +2,26 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Development Mode: Allow full read and write access to all collections
-    // to unblock development and provide a smooth prototyping experience.
-    // This should be restricted with proper security logic before production.
+    // Explicitly allow access to all core collections for the admin portal
+    match /serviceProviders/{document=**} {
+      allow read, write: if true;
+    }
+    match /customers/{document=**} {
+      allow read, write: if true;
+    }
+    match /users/{document=**} {
+      allow read, write: if true;
+    }
+    match /zip_codes/{document=**} {
+      allow read, write: if true;
+    }
+    match /provider_coverage/{document=**} {
+      allow read, write: if true;
+    }
+    match /_system_health/{document=**} {
+      allow read, write: if true;
+    }
+    // Global fallback for prototyping
     match /{document=**} {
       allow read, write: if true;
     }
