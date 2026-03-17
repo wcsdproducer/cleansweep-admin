@@ -52,17 +52,10 @@ export default function CoveragePage() {
 
   // Initialize Google Maps
   React.useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = "AIzaSyAvVbc9cKhziKY4FEOhWJSxmUVExwN7KNY";
     
-    if (!apiKey || apiKey === "YOUR_API_KEY_HERE" || apiKey.trim() === "" || apiKey.includes("AIzaSy")) {
-      // Key provided or dummy detected - attempting load
-    } else {
-      setGoogleError("API_KEY_MISSING");
-      return;
-    }
-
     const loader = new Loader({
-      apiKey: apiKey || "AIzaSyAvVbc9cKhziKY4FEOhWJSxmUVExwN7KNY",
+      apiKey: apiKey,
       version: "weekly",
       libraries: ["visualization", "geometry", "places"]
     })
@@ -207,20 +200,6 @@ export default function CoveragePage() {
         </div>
       </div>
 
-      {googleError === "API_KEY_MISSING" && (
-        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle className="font-bold">Google Maps API Key Required</AlertTitle>
-          <AlertDescription className="space-y-4 pt-2">
-            <p>To view the coverage map, configure your API key in the Google Cloud Console.</p>
-            <Button variant="outline" size="sm" onClick={() => window.open("https://console.cloud.google.com/google/maps-apis/credentials", "_blank")}>
-              <ExternalLink className="w-3 h-3 mr-2" />
-              Get API Key
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
       <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
         <div className="w-full lg:w-80 flex flex-col gap-6 overflow-y-auto">
           <Card>
@@ -324,7 +303,7 @@ export default function CoveragePage() {
         </div>
 
         <Card className="flex-1 relative overflow-hidden bg-muted/5 border-2">
-          {!googleLoaded && !googleError && (
+          {!googleLoaded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/20 gap-4">
               <Loader2 className="w-12 h-12 text-primary animate-spin" />
               <p className="text-sm font-bold text-muted-foreground">Loading Coverage Engine...</p>

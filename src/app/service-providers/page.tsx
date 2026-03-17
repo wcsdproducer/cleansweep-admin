@@ -19,11 +19,11 @@ import {
   Trash2, 
   Loader2,
   Star,
-  ShieldCheck,
-  Filter,
   RefreshCcw,
   Plus,
-  AlertCircle
+  AlertCircle,
+  MapPin,
+  Ruler
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { 
@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useCollection } from "@/firebase"
-import { collection, query, doc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, doc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore"
 import { useMemoFirebase } from "@/firebase/firestore/use-memo-firebase"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
@@ -64,11 +64,13 @@ export default function ServiceProvidersPage() {
     name: "", 
     email: "", 
     phone: "", 
-    category: "Residential" 
+    category: "Residential",
+    lat: "",
+    lng: "",
+    radius_miles: "20"
   })
   const firestore = useFirestore()
 
-  // Using a simple collection query to avoid indexing issues during development
   const providersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, "serviceProviders");
@@ -116,7 +118,15 @@ export default function ServiceProvidersPage() {
 
     const colRef = collection(firestore, "serviceProviders");
     const data = {
-      ...newProvider,
+      name: newProvider.name,
+      email: newProvider.email,
+      phone: newProvider.phone,
+      category: newProvider.category,
+      service_center: {
+        lat: parseFloat(newProvider.lat) || 0,
+        lng: parseFloat(newProvider.lng) || 0
+      },
+      radius_miles: parseFloat(newProvider.radius_miles) || 20,
       status: "Active",
       rating: 5.0,
       joinedDate: new Date().toISOString(),
@@ -133,7 +143,7 @@ export default function ServiceProvidersPage() {
     });
 
     setIsAddDialogOpen(false);
-    setNewProvider({ name: "", email: "", phone: "", category: "Residential" });
+    setNewProvider({ name: "", email: "", phone: "", category: "Residential", lat: "", lng: "", radius_miles: "20" });
     toast({
       title: "Success",
       description: "Provider creation initiated.",
@@ -160,54 +170,67 @@ export default function ServiceProvidersPage() {
                 Add Provider
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Add Provider</DialogTitle>
                 <DialogDescription>
-                  Register a new cleaning professional to the database.
+                  Register a new professional and define their service area.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">Name</Label>
-                  <Input 
-                    id="name" 
-                    value={newProvider.name} 
-                    onChange={(e) => setNewProvider(prev => ({ ...prev, name: e.target.value }))}
-                    className="col-span-3" 
-                  />
+              <div className="grid gap-6 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input id="name" value={newProvider.name} onChange={(e) => setNewProvider(p => ({ ...p, name: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" value={newProvider.email} onChange={(e) => setNewProvider(p => ({ ...p, email: e.target.value }))} />
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email"
-                    value={newProvider.email} 
-                    onChange={(e) => setNewProvider(prev => ({ ...prev, email: e.target.value }))}
-                    className="col-span-3" 
-                  />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={newProvider.category} onValueChange={(val) => setNewProvider(p => ({ ...p, category: val }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Residential">Residential</SelectItem>
+                        <SelectItem value="Commercial">Commercial</SelectItem>
+                        <SelectItem value="Deep Clean">Deep Clean</SelectItem>
+                        <SelectItem value="Industrial">Industrial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="radius">Service Radius (Miles)</Label>
+                    <div className="relative">
+                      <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input id="radius" type="number" className="pl-10" value={newProvider.radius_miles} onChange={(e) => setNewProvider(p => ({ ...p, radius_miles: e.target.value }))} />
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="category" className="text-right">Category</Label>
-                  <Select 
-                    value={newProvider.category} 
-                    onValueChange={(val) => setNewProvider(prev => ({ ...prev, category: val }))}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Residential">Residential</SelectItem>
-                      <SelectItem value="Commercial">Commercial</SelectItem>
-                      <SelectItem value="Deep Clean">Deep Clean</SelectItem>
-                      <SelectItem value="Industrial">Industrial</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lat">Center Latitude</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input id="lat" placeholder="e.g. 41.8781" className="pl-10" value={newProvider.lat} onChange={(e) => setNewProvider(p => ({ ...p, lat: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lng">Center Longitude</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input id="lng" placeholder="e.g. -87.6298" className="pl-10" value={newProvider.lng} onChange={(e) => setNewProvider(p => ({ ...p, lng: e.target.value }))} />
+                    </div>
+                  </div>
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddProvider} className="bg-primary text-white">Save</Button>
+                <Button onClick={handleAddProvider} className="bg-primary text-white">Save Provider</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -244,7 +267,7 @@ export default function ServiceProvidersPage() {
             <TableHeader className="bg-muted/50">
               <TableRow>
                 <TableHead>Provider Details</TableHead>
-                <TableHead>Category</TableHead>
+                <TableHead>Location & Range</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Rating</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -257,12 +280,20 @@ export default function ServiceProvidersPage() {
                     <div className="flex flex-col">
                       <span className="font-semibold text-sm">{provider.name || 'Unnamed'}</span>
                       <span className="text-xs text-muted-foreground">{provider.email || 'No email'}</span>
+                      <Badge variant="secondary" className="w-fit mt-1 text-[10px] uppercase font-bold">{provider.category || 'Standard'}</Badge>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="font-medium">
-                      {provider.category || 'Standard'}
-                    </Badge>
+                    <div className="flex flex-col text-xs space-y-1">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="w-3 h-3" />
+                        {provider.service_center?.lat?.toFixed(4)}, {provider.service_center?.lng?.toFixed(4)}
+                      </div>
+                      <div className="flex items-center gap-1 font-medium">
+                        <Ruler className="w-3 h-3 text-primary" />
+                        {provider.radius_miles || 20} Mile Radius
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
