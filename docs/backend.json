@@ -39,9 +39,29 @@
         "category": { "type": "string", "enum": ["Residential", "Commercial", "Deep Clean", "Industrial"] },
         "status": { "type": "string", "enum": ["Active", "Inactive", "Pending"] },
         "rating": { "type": "number" },
-        "joinedDate": { "type": "string", "format": "date-time" }
+        "joinedDate": { "type": "string", "format": "date-time" },
+        "service_center": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "radius_miles": { "type": "number" },
+        "state": { "type": "string" }
       },
       "required": ["name", "email", "category"]
+    },
+    "ZipCode": {
+      "title": "Zip Code Coverage",
+      "description": "Aggregated metrics for a specific ZIP code area",
+      "type": "object",
+      "properties": {
+        "zip": { "type": "string" },
+        "active_providers_count": { "type": "number" },
+        "last_customer_request_date": { "type": "string", "format": "date-time" },
+        "unfilled_leads": { "type": "number" }
+      }
     }
   },
   "auth": {
@@ -59,6 +79,10 @@
     "/serviceProviders/{providerId}": {
       "schema": "ServiceProvider",
       "description": "Registered service providers"
+    },
+    "/zip_codes/{zip}": {
+      "schema": "ZipCode",
+      "description": "Coverage monitoring per ZIP code"
     }
   }
 }

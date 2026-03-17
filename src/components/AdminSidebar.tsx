@@ -13,8 +13,8 @@ import {
   UserCircle,
   Palette,
   Settings,
-  ShieldCheck,
-  Briefcase
+  Briefcase,
+  Map
 } from "lucide-react"
 import {
   Sidebar,
@@ -34,6 +34,7 @@ import { usePathname } from "next/navigation"
 
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { name: "Service Coverage", icon: Map, href: "/coverage" },
   { name: "Customers", icon: UserCircle, href: "/customers" },
   { name: "Service Providers", icon: Briefcase, href: "/service-providers" },
   { name: "Users", icon: Users, href: "/users" },
@@ -59,14 +60,14 @@ export function AdminSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-xl">
       <SidebarHeader className="h-20 flex items-center px-6">
         <div className="flex items-center gap-3">
-          <div className="bg-accent rounded-lg p-2 shadow-lg shadow-accent/20">
+          <div className="bg-gradient-to-br from-primary to-accent rounded-xl p-2.5 shadow-xl shadow-primary/20">
             <CheckCircle2 className="w-6 h-6 text-white" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-headline font-bold text-xl leading-none tracking-tight text-white">
-              CleanSweep
+            <span className="font-headline font-black text-2xl leading-none tracking-tight text-white italic">
+              Clean<span className="text-accent">Sweep</span>
             </span>
-            <span className="text-[9px] uppercase tracking-[0.2em] opacity-80 font-bold mt-1 text-accent">
+            <span className="text-[8px] uppercase tracking-[0.3em] opacity-60 font-bold mt-1 text-white">
               Admin Vault
             </span>
           </div>
