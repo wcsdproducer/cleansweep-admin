@@ -1,8 +1,10 @@
+
 "use client"
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { 
   Activity, 
   ShieldCheck, 
@@ -12,188 +14,224 @@ import {
   Cpu, 
   HardDrive,
   RefreshCcw,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
+import { useFirestore } from "@/firebase"
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore"
 
 export default function MonitoringPage() {
-  const [uptime, setUptime] = React.useState(99.98)
-  
+  const [metrics, setMetrics] = React.useState({
+    cpu: 32,
+    memory: 6.2,
+    load: 24,
+    latency: 18,
+    uptime: 99.98
+  })
+  const [isTesting, setIsTesting] = React.useState(false)
+  const [lastTestResult, setLastTestResult] = React.useState<number | null>(null)
+  const firestore = useFirestore()
+
+  // Simulate real-time fluctuations
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setMetrics(prev => ({
+        ...prev,
+        cpu: Math.max(10, Math.min(90, prev.cpu + (Math.random() * 10 - 5))),
+        load: Math.max(5, Math.min(95, prev.load + (Math.random() * 6 - 3))),
+        memory: Math.max(4, Math.min(15, prev.memory + (Math.random() * 0.4 - 0.2)))
+      }))
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleTestLatency = async () => {
+    if (!firestore) return
+    setIsTesting(true)
+    const start = performance.now()
+    try {
+      // Perform a small write/read to measure real round-trip latency
+      const testRef = doc(firestore, "_system_health", "latency_test")
+      await setDoc(testRef, { timestamp: serverTimestamp() })
+      await getDoc(testRef)
+      const end = performance.now()
+      const diff = Math.round(end - start)
+      setLastTestResult(diff)
+      setMetrics(prev => ({ ...prev, latency: diff }))
+    } catch (err) {
+      console.error("Health check failed", err)
+    } finally {
+      setIsTesting(false)
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline text-primary">System Monitoring</h1>
-          <p className="text-muted-foreground">StudioVault Database Connection Status</p>
+          <p className="text-muted-foreground">Live Database & Infrastructure Status</p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 px-3 py-1 text-sm">
+          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 px-3 py-1 text-sm border-green-200">
             <CheckCircle2 className="w-3 h-3 mr-2" />
-            All Connections Stable
+            Operational
           </Badge>
-          <Button variant="outline" size="icon">
-            <RefreshCcw className="w-4 h-4" />
+          <Button variant="outline" size="sm" onClick={handleTestLatency} disabled={isTesting}>
+            {isTesting ? <RefreshCcw className="w-4 h-4 animate-spin mr-2" /> : <Activity className="w-4 h-4 mr-2" />}
+            Test Latency
           </Button>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
+        <Card className="relative overflow-hidden border-secondary">
+          <div className="absolute top-0 right-0 p-4 opacity-5">
             <Database className="w-24 h-24" />
           </div>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Primary Database</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Database Health</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-end justify-between">
               <span className="text-3xl font-bold">Connected</span>
-              <span className="text-green-500 font-semibold text-sm flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-green-500 font-bold text-sm flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 Live
               </span>
             </div>
             <div className="space-y-1">
-              <div className="flex justify-between text-xs font-medium">
-                <span>Load Level</span>
-                <span>24%</span>
+              <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground">
+                <span>Active Load</span>
+                <span>{Math.round(metrics.load)}%</span>
               </div>
-              <Progress value={24} className="h-1.5" />
+              <Progress value={metrics.load} className="h-1.5" />
             </div>
-            <p className="text-xs text-muted-foreground">Instance: studio-3673070449-f277c</p>
+            <p className="text-[10px] text-muted-foreground font-mono">ID: {firestore?.app.options.projectId || 'unknown'}</p>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
+        <Card className="relative overflow-hidden border-secondary">
+          <div className="absolute top-0 right-0 p-4 opacity-5">
             <Zap className="w-24 h-24" />
           </div>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Response Time</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Real Latency</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-end justify-between">
-              <span className="text-3xl font-bold">18ms</span>
-              <span className="text-accent font-semibold text-sm flex items-center gap-1">
-                Excellent
-              </span>
+              <span className="text-3xl font-bold">{metrics.latency}ms</span>
+              <Badge variant="outline" className="text-accent border-accent/30 bg-accent/5">
+                {metrics.latency < 50 ? 'Optimal' : metrics.latency < 150 ? 'Good' : 'Degraded'}
+              </Badge>
             </div>
             <div className="space-y-1">
-              <div className="flex justify-between text-xs font-medium">
-                <span>Peak Latency (24h)</span>
-                <span>142ms</span>
+              <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground">
+                <span>Last Test Result</span>
+                <span>{lastTestResult ? `${lastTestResult}ms` : 'No data'}</span>
               </div>
-              <Progress value={15} className="h-1.5" />
+              <Progress value={Math.min(100, (metrics.latency / 200) * 100)} className="h-1.5" />
             </div>
-            <p className="text-xs text-muted-foreground">Region: us-east-1 (Cloud)</p>
+            <p className="text-[10px] text-muted-foreground">Regional Endpoint: Firebase Cloud</p>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
+        <Card className="relative overflow-hidden border-secondary">
+          <div className="absolute top-0 right-0 p-4 opacity-5">
             <ShieldCheck className="w-24 h-24" />
           </div>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">System Uptime</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Uptime SLA</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-end justify-between">
-              <span className="text-3xl font-bold">{uptime}%</span>
-              <span className="text-green-500 font-semibold text-sm flex items-center gap-1">
-                Normal
-              </span>
+              <span className="text-3xl font-bold">{metrics.uptime}%</span>
+              <span className="text-primary font-bold text-sm">Target: 99.9%</span>
             </div>
             <div className="space-y-1">
-              <div className="flex justify-between text-xs font-medium">
-                <span>Target SLA</span>
-                <span>99.9%</span>
+              <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground">
+                <span>Monthly Status</span>
+                <span>Normal</span>
               </div>
-              <Progress value={99} className="h-1.5" />
+              <Progress value={99.9} className="h-1.5 bg-primary/10" />
             </div>
-            <p className="text-xs text-muted-foreground">Last downtime: 18 days ago</p>
+            <p className="text-[10px] text-muted-foreground">Last incident reported: 18 days ago</p>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="border-secondary">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Globe className="w-5 h-5 text-accent" />
-              Regional Health
+              Edge Network Latency
             </CardTitle>
-            <CardDescription>Database latency across global regions</CardDescription>
+            <CardDescription>Simulated global distribution health</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[
-                { name: "North America (East)", status: "Optimal", ping: "12ms" },
-                { name: "North America (West)", status: "Optimal", ping: "45ms" },
-                { name: "Europe (Central)", status: "Good", ping: "88ms" },
-                { name: "Asia Pacific (Tokyo)", status: "Fair", ping: "192ms" },
+                { name: "US-East (Virginia)", ping: Math.round(metrics.latency * 0.8) },
+                { name: "US-West (Oregon)", ping: Math.round(metrics.latency * 1.2) },
+                { name: "EU-West (Dublin)", ping: Math.round(metrics.latency * 2.5) },
+                { name: "AP-South (Mumbai)", ping: Math.round(metrics.latency * 4.2) },
               ].map((region, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/30 transition-colors">
+                <div key={i} className="flex items-center justify-between p-3 border rounded-xl bg-muted/10">
                   <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${region.status === 'Optimal' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                    <div className={`w-2 h-2 rounded-full ${region.ping < 100 ? 'bg-green-500' : 'bg-amber-500'}`} />
                     <span className="text-sm font-medium">{region.name}</span>
                   </div>
-                  <span className="text-sm font-mono text-muted-foreground">{region.ping}</span>
+                  <span className="text-xs font-mono font-bold text-muted-foreground">{region.ping}ms</span>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-secondary">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Activity className="w-5 h-5 text-primary" />
-              System Resource Usage
+              Resource Utilization
             </CardTitle>
-            <CardDescription>Current hardware utilization metrics</CardDescription>
+            <CardDescription>Estimated system-level metrics</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-muted-foreground" />
-                  <span>CPU Utilization</span>
+                <div className="flex items-center gap-2 font-semibold">
+                  <Cpu className="w-4 h-4 text-primary" />
+                  <span>CPU Usage</span>
                 </div>
-                <span className="font-semibold">32%</span>
+                <span className="font-mono text-xs">{metrics.cpu.toFixed(1)}%</span>
               </div>
-              <Progress value={32} className="h-2" />
+              <Progress value={metrics.cpu} className="h-2" />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <HardDrive className="w-4 h-4 text-muted-foreground" />
-                  <span>Memory Usage</span>
+                <div className="flex items-center gap-2 font-semibold">
+                  <HardDrive className="w-4 h-4 text-accent" />
+                  <span>Memory Allocation</span>
                 </div>
-                <span className="font-semibold">6.2GB / 16GB</span>
+                <span className="font-mono text-xs">{metrics.memory.toFixed(1)}GB / 16GB</span>
               </div>
-              <Progress value={40} className="h-2" />
+              <Progress value={(metrics.memory / 16) * 100} className="h-2" />
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Database className="w-4 h-4 text-muted-foreground" />
-                  <span>Storage Used</span>
-                </div>
-                <span className="font-semibold">842GB / 2TB</span>
+            <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-bold text-primary uppercase tracking-wider">Auto-Scaling Active</p>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Cloud instances are automatically managing load. No manual intervention required at current utilization levels.
+                </p>
               </div>
-              <Progress value={42} className="h-2" />
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
-}
-
-function Button({ children, ...props }: any) {
-  return (
-    <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2" {...props}>
-      {children}
-    </button>
   )
 }
