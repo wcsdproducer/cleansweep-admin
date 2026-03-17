@@ -236,8 +236,6 @@ export default function CoveragePage() {
                     <SelectItem value="All">All Categories</SelectItem>
                     <SelectItem value="Residential">Residential</SelectItem>
                     <SelectItem value="Commercial">Commercial</SelectItem>
-                    <SelectItem value="Deep Clean">Deep Clean</SelectItem>
-                    <SelectItem value="Industrial">Industrial</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

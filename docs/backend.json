@@ -36,7 +36,7 @@
         "name": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "phone": { "type": "string" },
-        "category": { "type": "string", "enum": ["Residential", "Commercial", "Deep Clean", "Industrial"] },
+        "category": { "type": "string", "enum": ["Residential", "Commercial"] },
         "status": { "type": "string", "enum": ["Active", "Inactive", "Pending"] },
         "rating": { "type": "number" },
         "joinedDate": { "type": "string", "format": "date-time" },

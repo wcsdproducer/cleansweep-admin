@@ -197,8 +197,6 @@ export default function ServiceProvidersPage() {
                       <SelectContent>
                         <SelectItem value="Residential">Residential</SelectItem>
                         <SelectItem value="Commercial">Commercial</SelectItem>
-                        <SelectItem value="Deep Clean">Deep Clean</SelectItem>
-                        <SelectItem value="Industrial">Industrial</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
