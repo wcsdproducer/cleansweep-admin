@@ -21,7 +21,9 @@ import {
   Loader2,
   Star,
   ShieldCheck,
-  Filter
+  Filter,
+  RefreshCcw,
+  Plus
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { 
@@ -66,20 +68,25 @@ export default function ServiceProvidersPage() {
   })
   const firestore = useFirestore()
 
+  // Ensure collection name matches backend.json exactly: serviceProviders
   const providersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, "serviceProviders"), orderBy("name", "asc"));
   }, [firestore]);
 
-  const { data: providers, loading } = useCollection(providersQuery);
+  const { data: providers, loading, error } = useCollection(providersQuery);
 
   const filtered = React.useMemo(() => {
     if (!providers) return [];
-    return providers.filter(p => 
-      p.name?.toLowerCase().includes(search.toLowerCase()) || 
-      p.email?.toLowerCase().includes(search.toLowerCase()) ||
-      p.category?.toLowerCase().includes(search.toLowerCase())
-    )
+    if (!search.trim()) return providers;
+    
+    const searchLower = search.toLowerCase();
+    return providers.filter(p => {
+      const nameMatch = p.name?.toLowerCase().includes(searchLower);
+      const emailMatch = p.email?.toLowerCase().includes(searchLower);
+      const categoryMatch = p.category?.toLowerCase().includes(searchLower);
+      return nameMatch || emailMatch || categoryMatch;
+    });
   }, [providers, search]);
 
   const handleDelete = (providerId: string) => {
@@ -128,7 +135,7 @@ export default function ServiceProvidersPage() {
     setIsAddDialogOpen(false);
     setNewProvider({ name: "", email: "", phone: "", category: "Residential" });
     toast({
-      title: "Action Initiated",
+      title: "Success",
       description: "Provider registration request sent.",
     });
   }
@@ -141,80 +148,86 @@ export default function ServiceProvidersPage() {
           <p className="text-muted-foreground">Manage your cleaning professionals and contractors</p>
         </div>
         
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-accent hover:bg-accent/90">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add Provider
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Register New Provider</DialogTitle>
-              <DialogDescription>
-                Onboard a new service professional to the CleanSweep network.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Name</Label>
-                <Input 
-                  id="name" 
-                  value={newProvider.name} 
-                  onChange={(e) => setNewProvider(prev => ({ ...prev, name: e.target.value }))}
-                  className="col-span-3" 
-                />
+        <div className="flex gap-2">
+           <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            <RefreshCcw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-accent hover:bg-accent/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Provider
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Register New Provider</DialogTitle>
+                <DialogDescription>
+                  Onboard a new service professional to the CleanSweep network.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">Name</Label>
+                  <Input 
+                    id="name" 
+                    value={newProvider.name} 
+                    onChange={(e) => setNewProvider(prev => ({ ...prev, name: e.target.value }))}
+                    className="col-span-3" 
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="email" className="text-right">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email"
+                    value={newProvider.email} 
+                    onChange={(e) => setNewProvider(prev => ({ ...prev, email: e.target.value }))}
+                    className="col-span-3" 
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="phone" className="text-right">Phone</Label>
+                  <Input 
+                    id="phone" 
+                    value={newProvider.phone} 
+                    onChange={(e) => setNewProvider(prev => ({ ...prev, phone: e.target.value }))}
+                    className="col-span-3" 
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="category" className="text-right">Category</Label>
+                  <Select 
+                    value={newProvider.category} 
+                    onValueChange={(val) => setNewProvider(prev => ({ ...prev, category: val }))}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Residential">Residential</SelectItem>
+                      <SelectItem value="Commercial">Commercial</SelectItem>
+                      <SelectItem value="Deep Clean">Deep Clean</SelectItem>
+                      <SelectItem value="Industrial">Industrial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email"
-                  value={newProvider.email} 
-                  onChange={(e) => setNewProvider(prev => ({ ...prev, email: e.target.value }))}
-                  className="col-span-3" 
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone" className="text-right">Phone</Label>
-                <Input 
-                  id="phone" 
-                  value={newProvider.phone} 
-                  onChange={(e) => setNewProvider(prev => ({ ...prev, phone: e.target.value }))}
-                  className="col-span-3" 
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="category" className="text-right">Category</Label>
-                <Select 
-                  value={newProvider.category} 
-                  onValueChange={(val) => setNewProvider(prev => ({ ...prev, category: val }))}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Residential">Residential</SelectItem>
-                    <SelectItem value="Commercial">Commercial</SelectItem>
-                    <SelectItem value="Deep Clean">Deep Clean</SelectItem>
-                    <SelectItem value="Industrial">Industrial</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddProvider} className="bg-primary text-white">Register</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddProvider} className="bg-primary text-white">Register</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 max-w-sm">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
-            placeholder="Search providers..." 
+            placeholder="Search by name, email or category..." 
             className="pl-10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -247,13 +260,13 @@ export default function ServiceProvidersPage() {
                 <TableRow key={provider.id}>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-semibold text-sm">{provider.name}</span>
-                      <span className="text-xs text-muted-foreground">{provider.email}</span>
+                      <span className="font-semibold text-sm">{provider.name || 'Unnamed Provider'}</span>
+                      <span className="text-xs text-muted-foreground">{provider.email || 'No email provided'}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="font-medium">
-                      {provider.category}
+                      {provider.category || 'General'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -268,7 +281,7 @@ export default function ServiceProvidersPage() {
                   <TableCell>
                     <div className="flex items-center gap-1 text-amber-500">
                       <Star className="w-4 h-4 fill-current" />
-                      <span className="text-sm font-bold text-foreground">{provider.rating?.toFixed(1) || '5.0'}</span>
+                      <span className="text-sm font-bold text-foreground">{provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -297,8 +310,20 @@ export default function ServiceProvidersPage() {
                 </TableRow>
               )) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                    No service providers matching your criteria.
+                  <TableCell colSpan={5} className="text-center py-20">
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-muted-foreground font-medium">No service providers found.</p>
+                      <p className="text-xs text-muted-foreground/60">Try adding a new provider or checking your database connection.</p>
+                      <Button 
+                        variant="link" 
+                        size="sm" 
+                        onClick={() => setIsAddDialogOpen(true)}
+                        className="text-primary mt-2"
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        Add your first provider
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

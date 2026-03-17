@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -14,13 +15,14 @@ import { Button } from "@/components/ui/button"
 import { Database, Filter, Download, RefreshCw, Pencil, Trash, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useFirestore, useCollection } from "@/firebase"
-import { collection, query, orderBy, limit } from "firebase/firestore"
+import { collection, query, limit } from "firebase/firestore"
 import { useMemoFirebase } from "@/firebase/firestore/use-memo-firebase"
 
-const TABLES = ["customers", "users", "serviceProviders", "sessions", "logs", "billing"]
+// Ensure collection names match backend.json
+const TABLES = ["customers", "users", "serviceProviders"]
 
 export default function DatabasePage() {
-  const [selectedTable, setSelectedTable] = React.useState("customers")
+  const [selectedTable, setSelectedTable] = React.useState("serviceProviders")
   const firestore = useFirestore()
 
   const dataQuery = useMemoFirebase(() => {
@@ -28,6 +30,7 @@ export default function DatabasePage() {
     try {
       return query(collection(firestore, selectedTable), limit(50));
     } catch (e) {
+      console.error("Database query failed:", e);
       return null;
     }
   }, [firestore, selectedTable]);
@@ -119,8 +122,12 @@ export default function DatabasePage() {
             </div>
           )}
           {!loading && (!currentData || currentData.length === 0) && (
-            <div className="p-12 text-center">
-              <p className="text-muted-foreground">No records found in collection '{selectedTable}'</p>
+            <div className="p-20 text-center">
+              <div className="flex flex-col items-center gap-2 opacity-60">
+                <Database className="w-10 h-10 mb-2" />
+                <p className="text-muted-foreground">No records found in collection '{selectedTable}'</p>
+                <p className="text-xs">Ensure data has been added through the management pages.</p>
+              </div>
             </div>
           )}
         </CardContent>
