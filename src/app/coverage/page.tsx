@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Loader2, Map as MapIcon, Filter, Search, Target, Users, AlertTriangle, ExternalLink, Save } from "lucide-react"
+import { Loader2, Map as MapIcon, Filter, Search, Target, Users, AlertTriangle, ExternalLink, Save, Info } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -50,7 +50,6 @@ export default function CoveragePage() {
 
   const { data: providers, loading: providersLoading } = useCollection<any>(providersRef);
 
-  // Initialize Google Maps
   React.useEffect(() => {
     const apiKey = "AIzaSyAlOFuBM-8PnXGMgNRvmr9BZTTzY97ptrI";
     
@@ -64,32 +63,35 @@ export default function CoveragePage() {
       setGoogleLoaded(true)
       setGoogleError(null)
     }).catch((e) => {
-      setGoogleError("LOAD_FAILED")
+      console.error("Maps Load Error:", e)
+      setGoogleError("API_ERROR")
     })
   }, [])
 
-  // Setup Map Instance
   React.useEffect(() => {
     if (googleLoaded && mapRef.current && !map) {
-      const newMap = new google.maps.Map(mapRef.current, {
-        center: { lat: 39.8283, lng: -98.5795 },
-        zoom: 4,
-        styles: MAP_STYLE_SILVER,
-        disableDefaultUI: true,
-        zoomControl: true,
-      })
+      try {
+        const newMap = new google.maps.Map(mapRef.current, {
+          center: { lat: 39.8283, lng: -98.5795 },
+          zoom: 4,
+          styles: MAP_STYLE_SILVER,
+          disableDefaultUI: true,
+          zoomControl: true,
+        })
 
-      newMap.addListener("click", (e: google.maps.MapMouseEvent) => {
-        if (e.latLng) {
-          setClickedCoord({ lat: e.latLng.lat(), lng: e.latLng.lng() })
-        }
-      })
+        newMap.addListener("click", (e: google.maps.MapMouseEvent) => {
+          if (e.latLng) {
+            setClickedCoord({ lat: e.latLng.lat(), lng: e.latLng.lng() })
+          }
+        })
 
-      setMap(newMap)
+        setMap(newMap)
+      } catch (err) {
+        setGoogleError("INITIALIZATION_ERROR")
+      }
     }
   }, [googleLoaded, map])
 
-  // Render Overlays
   const circlesRef = React.useRef<google.maps.Circle[]>([])
   const heatmapRef = React.useRef<google.maps.visualization.HeatmapLayer | null>(null)
 
@@ -121,17 +123,18 @@ export default function CoveragePage() {
       }
     })
 
-    heatmapRef.current = new google.maps.visualization.HeatmapLayer({
-      data: heatmapData,
-      map: map,
-      radius: 50,
-      opacity: 0.6,
-    })
+    if (heatmapData.length > 0) {
+      heatmapRef.current = new google.maps.visualization.HeatmapLayer({
+        data: heatmapData,
+        map: map,
+        radius: 50,
+        opacity: 0.6,
+      })
+    }
   }, [map, googleLoaded, providers, providersLoading, filterType])
 
-  // Coverage Analysis
   React.useEffect(() => {
-    if (!clickedCoord || providersLoading || !googleLoaded) return
+    if (!clickedCoord || providersLoading || !googleLoaded || !map) return
 
     const clickPoint = new google.maps.LatLng(clickedCoord.lat, clickedCoord.lng)
     const covering = (providers || []).filter(p => {
@@ -142,7 +145,7 @@ export default function CoveragePage() {
     })
 
     setSelectedPointProviders(covering)
-  }, [clickedCoord, providers, providersLoading, googleLoaded])
+  }, [clickedCoord, providers, providersLoading, googleLoaded, map])
 
   const handleSearch = () => {
     if (!map || !address || !googleLoaded) return
@@ -301,13 +304,35 @@ export default function CoveragePage() {
         </div>
 
         <Card className="flex-1 relative overflow-hidden bg-muted/5 border-2">
-          {!googleLoaded && (
+          {googleError ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/95 z-20 p-8 text-center">
+              <AlertTriangle className="w-12 h-12 text-destructive mb-4" />
+              <h3 className="text-lg font-bold mb-2">Google Maps Activation Required</h3>
+              <p className="text-sm text-muted-foreground max-w-md mb-6">
+                The Google Maps JavaScript API has not been activated for this key. Please go to the Google Cloud Console and enable it.
+              </p>
+              <div className="grid gap-4 text-left bg-muted p-4 rounded-lg w-full max-w-sm">
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs shrink-0">1</div>
+                  <p className="text-xs font-medium">Go to <a href="https://console.cloud.google.com/" target="_blank" className="text-primary underline">Google Cloud Console</a></p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs shrink-0">2</div>
+                  <p className="text-xs font-medium">Search for "Maps JavaScript API"</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs shrink-0">3</div>
+                  <p className="text-xs font-medium">Click "Enable"</p>
+                </div>
+              </div>
+            </div>
+          ) : !googleLoaded ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/20 gap-4">
               <Loader2 className="w-12 h-12 text-primary animate-spin" />
               <p className="text-sm font-bold text-muted-foreground">Loading Coverage Engine...</p>
             </div>
-          )}
-          <div ref={mapRef} className={`w-full h-full ${!googleLoaded ? 'opacity-0' : 'opacity-100'}`} />
+          ) : null}
+          <div ref={mapRef} className={`w-full h-full ${!googleLoaded || googleError ? 'opacity-0' : 'opacity-100'}`} />
         </Card>
       </div>
     </div>

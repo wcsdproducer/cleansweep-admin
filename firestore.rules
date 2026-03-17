@@ -21,7 +21,7 @@ service cloud.firestore {
     match /_system_health/{document=**} {
       allow read, write: if true;
     }
-    // Global fallback for prototyping
+    // Global fallback for prototyping - ensures immediate access
     match /{document=**} {
       allow read, write: if true;
     }
