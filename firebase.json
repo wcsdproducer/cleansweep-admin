@@ -1,6 +1,7 @@
 {
   "apphosting": {
     "backendId": "cleansweep-admin",
+    "rootDir": "/",
     "ignore": [
       "node_modules",
       ".git",
