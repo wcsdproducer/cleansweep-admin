@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+import { useState, useEffect } from "react"
+import { signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/firebase"
 import { Lock, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react"
@@ -18,6 +18,20 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Handle redirect result when returning from Google sign-in
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          router.replace("/dashboard")
+        }
+      })
+      .catch((err: unknown) => {
+        const code = (err as { code?: string })?.code ?? "unknown"
+        setError(`Google sign-in error: ${code}`)
+      })
+  }, [auth, router])
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,13 +52,11 @@ export default function AdminLoginPage() {
     setLoading(true)
     try {
       const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
-      router.replace("/dashboard")
+      await signInWithRedirect(auth, provider)
+      // Page will redirect to Google and come back
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code ?? "unknown"
-      const msg = (err as { message?: string })?.message ?? ""
-      setError(`Google sign-in error: ${code}${msg ? " — " + msg.slice(0, 120) : ""}`)
-    } finally {
+      setError(`Google sign-in error: ${code}`)
       setLoading(false)
     }
   }
