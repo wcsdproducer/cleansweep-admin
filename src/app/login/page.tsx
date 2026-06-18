@@ -56,15 +56,14 @@ export default function AdminLoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-3">
-            {/* mix-blend-mode: screen makes the white logo background transparent on dark */}
-            <img
-              src="https://firebasestorage.googleapis.com/v0/b/studio-3673070449-f277c.firebasestorage.app/o/brand%2Fcleansweep-logo.png?alt=media"
-              alt="CleanSweep Cleaning Company LLC"
-              width={200}
-              height={200}
-              style={{ mixBlendMode: 'screen' }}
-              className="object-contain"
-            />
+            <div className="w-40 h-40 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center shadow-2xl shadow-black/40">
+              <img
+                src="/logo.png"
+                alt="CleanSweep Cleaning Company LLC"
+                width={130}
+                className="object-contain"
+              />
+            </div>
           </div>
           <p className="text-white/40 text-xs uppercase tracking-[0.3em] font-bold mt-1">Admin Vault</p>
         </div>
