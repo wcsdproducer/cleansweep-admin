@@ -48,38 +48,36 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f1923] via-[#0d2235] to-[#0a1628] flex items-center justify-center p-4">
-      {/* Background grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-teal-50 flex items-center justify-center p-4">
+      {/* Subtle dot pattern */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle,_#0ea5e920_1px,_transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
       <div className="relative w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-white rounded-2xl shadow-2xl shadow-black/50 p-4 inline-block">
-              <img
-                src="/logo.jpg"
-                alt="CleanSweep Cleaning Company LLC"
-                width={180}
-                className="object-contain block"
-              />
-            </div>
+            <img
+              src="/logo.jpg"
+              alt="CleanSweep Cleaning Company LLC"
+              width={200}
+              className="object-contain block drop-shadow-sm"
+            />
           </div>
-          <p className="text-white/40 text-xs uppercase tracking-[0.3em] font-bold">Admin Vault</p>
+          <p className="text-slate-400 text-xs uppercase tracking-[0.3em] font-bold">Admin Vault</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl shadow-slate-200/60">
           <div className="flex items-center gap-2 mb-6">
-            <ShieldCheck className="w-5 h-5 text-[#2eb086]" />
-            <span className="text-white/70 text-sm font-medium">Restricted Access — Authorized Personnel Only</span>
+            <ShieldCheck className="w-5 h-5 text-teal-500" />
+            <span className="text-slate-500 text-sm font-medium">Restricted Access — Authorized Personnel Only</span>
           </div>
 
           {/* Google Sign In */}
           <Button
             type="button"
             variant="outline"
-            className="w-full mb-4 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:border-white/30 rounded-xl h-11"
+            className="w-full mb-4 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 rounded-xl h-11 font-medium shadow-sm"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
@@ -94,46 +92,46 @@ export default function AdminLoginPage() {
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10" />
+              <div className="w-full border-t border-slate-200" />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 bg-transparent text-white/30 text-xs">or sign in with email</span>
+              <span className="px-3 bg-white text-slate-400 text-xs">or sign in with email</span>
             </div>
           </div>
 
           {/* Email form */}
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-white/60 text-xs uppercase tracking-wider font-bold">Email</Label>
+              <Label className="text-slate-600 text-xs uppercase tracking-wider font-bold">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
                   placeholder="admin@cleansweep.com"
-                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl h-11 focus:border-[#1a6a91] focus:ring-[#1a6a91]/20"
+                  className="pl-10 bg-white border-slate-200 text-slate-800 placeholder:text-slate-300 rounded-xl h-11 focus:border-teal-400 focus:ring-teal-400/20"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-white/60 text-xs uppercase tracking-wider font-bold">Password</Label>
+              <Label className="text-slate-600 text-xs uppercase tracking-wider font-bold">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl h-11 focus:border-[#1a6a91] focus:ring-[#1a6a91]/20"
+                  className="pl-10 pr-10 bg-white border-slate-200 text-slate-800 placeholder:text-slate-300 rounded-xl h-11 focus:border-teal-400 focus:ring-teal-400/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -141,7 +139,7 @@ export default function AdminLoginPage() {
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm">
                 {error}
               </div>
             )}
@@ -149,14 +147,14 @@ export default function AdminLoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-11 rounded-xl bg-gradient-to-r from-[#1a6a91] to-[#2eb086] hover:opacity-90 text-white font-bold shadow-lg shadow-[#1a6a91]/30 transition-all"
+              className="w-full h-11 rounded-xl bg-gradient-to-r from-[#1a6a91] to-[#2eb086] hover:opacity-90 text-white font-bold shadow-md transition-all"
             >
               {loading ? "Signing in…" : "Sign In to Admin Portal"}
             </Button>
           </form>
         </div>
 
-        <p className="text-center text-white/20 text-xs mt-6">
+        <p className="text-center text-slate-400 text-xs mt-6">
           CleanSweep Admin Vault · Unauthorized access is prohibited
         </p>
       </div>
