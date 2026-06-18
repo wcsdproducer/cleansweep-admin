@@ -9,7 +9,6 @@ import { Lock, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import Image from "next/image"
 
 export default function AdminLoginPage() {
   const auth = useAuth()
@@ -57,13 +56,14 @@ export default function AdminLoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-3">
-            <Image
+            {/* mix-blend-mode: screen makes the white logo background transparent on dark */}
+            <img
               src="https://firebasestorage.googleapis.com/v0/b/studio-3673070449-f277c.firebasestorage.app/o/brand%2Fcleansweep-logo.png?alt=media"
               alt="CleanSweep Cleaning Company LLC"
               width={200}
               height={200}
-              className="object-contain drop-shadow-2xl"
-              priority
+              style={{ mixBlendMode: 'screen' }}
+              className="object-contain"
             />
           </div>
           <p className="text-white/40 text-xs uppercase tracking-[0.3em] font-bold mt-1">Admin Vault</p>
