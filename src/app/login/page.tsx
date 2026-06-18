@@ -55,13 +55,17 @@ export default function AdminLoginPage() {
       <div className="relative w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1a6a91] to-[#2eb086] shadow-2xl shadow-[#1a6a91]/40 mb-4">
-            <ShieldCheck className="w-8 h-8 text-white" />
+          <div className="flex items-center justify-center mb-4">
+            <div className="bg-white rounded-2xl shadow-2xl shadow-black/50 p-4 inline-block">
+              <img
+                src="/logo.jpg"
+                alt="CleanSweep Cleaning Company LLC"
+                width={180}
+                className="object-contain block"
+              />
+            </div>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
-            Clean<span className="text-[#2eb086]">Sweep</span>
-          </h1>
-          <p className="text-white/40 text-xs uppercase tracking-[0.3em] font-bold mt-1">Admin Vault</p>
+          <p className="text-white/40 text-xs uppercase tracking-[0.3em] font-bold">Admin Vault</p>
         </div>
 
         {/* Card */}
