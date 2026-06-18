@@ -40,8 +40,10 @@ export default function AdminLoginPage() {
       const provider = new GoogleAuthProvider()
       await signInWithPopup(auth, provider)
       router.replace("/dashboard")
-    } catch {
-      setError("Google sign-in failed. Please try again.")
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code ?? "unknown"
+      const msg = (err as { message?: string })?.message ?? ""
+      setError(`Google sign-in error: ${code}${msg ? " — " + msg.slice(0, 120) : ""}`)
     } finally {
       setLoading(false)
     }
