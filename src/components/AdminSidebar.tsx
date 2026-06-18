@@ -30,7 +30,9 @@ import {
   SidebarGroupContent,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { signOut } from "firebase/auth"
+import { useAuth } from "@/firebase"
 
 const navigationItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -50,11 +52,18 @@ const settingsItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const auth = useAuth()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  const handleSignOut = async () => {
+    await signOut(auth)
+    router.replace("/login")
+  }
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-xl">
@@ -125,7 +134,11 @@ export function AdminSidebar() {
       <SidebarFooter className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Sign Out" className="text-destructive hover:text-white hover:bg-destructive transition-colors">
+            <SidebarMenuButton
+              tooltip="Sign Out"
+              onClick={handleSignOut}
+              className="text-destructive hover:text-white hover:bg-destructive transition-colors cursor-pointer"
+            >
               <LogOut className="w-5 h-5" />
               <span className="font-medium">Sign Out</span>
             </SidebarMenuButton>

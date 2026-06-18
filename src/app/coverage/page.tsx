@@ -49,7 +49,11 @@ export default function CoveragePage() {
   const { data: providers, loading: providersLoading } = useCollection<any>(providersRef);
 
   React.useEffect(() => {
-    const apiKey = "AIzaSyCSPFEkDyRV8L3OzROcizzb6TBwv8m3zPc";
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+    if (!apiKey) {
+      console.error("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not set.");
+      return;
+    }
     
     const loader = new Loader({
       apiKey: apiKey,
