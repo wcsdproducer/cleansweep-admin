@@ -5,10 +5,11 @@ import { useState } from "react"
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/firebase"
-import { CheckCircle2, Lock, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react"
+import { Lock, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Image from "next/image"
 
 export default function AdminLoginPage() {
   const auth = useAuth()
@@ -55,12 +56,16 @@ export default function AdminLoginPage() {
       <div className="relative w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1a6a91] to-[#2eb086] shadow-2xl shadow-[#1a6a91]/40 mb-4">
-            <CheckCircle2 className="w-8 h-8 text-white" />
+          <div className="flex items-center justify-center mb-3">
+            <Image
+              src="https://firebasestorage.googleapis.com/v0/b/studio-3673070449-f277c.firebasestorage.app/o/brand%2Fcleansweep-logo.png?alt=media"
+              alt="CleanSweep Cleaning Company LLC"
+              width={200}
+              height={200}
+              className="object-contain drop-shadow-2xl"
+              priority
+            />
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
-            Clean<span className="text-[#2eb086]">Sweep</span>
-          </h1>
           <p className="text-white/40 text-xs uppercase tracking-[0.3em] font-bold mt-1">Admin Vault</p>
         </div>
 
