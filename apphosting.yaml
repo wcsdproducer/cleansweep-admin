@@ -2,10 +2,45 @@
 # https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
   maxInstances: 1
 
 env:
   - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     secret: GOOGLE_MAPS_API_KEY
+
+  # Firebase client config (real values — required for Auth to work)
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyAuH64vGAgWc-t4YKe91df8GuJ7lfzU6oo
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: studio-3673070449-f277c.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: studio-3673070449-f277c
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: studio-3673070449-f277c.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "918212352467"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:918212352467:web:a3dae31d2351cd95c83726
+    availability:
+      - BUILD
+      - RUNTIME
